@@ -19,7 +19,7 @@ namespace pms.Models
         [MaxLength(50)]
         public string Branch { get; set; }
         [Required, Range(0, 10)]
-        public double CGPA { get; set; }
+        public decimal CGPA { get; set; }
         [Required, Range(2020, 2035)]
         public int PassingYear { get; set; }
         [Phone, RegularExpression(@"^\d{10}$", ErrorMessage = "Phone number must be 10 digits.")]
