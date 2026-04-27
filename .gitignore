@@ -2,3 +2,5 @@
 bin/
 obj/
 *.user
+*.db
+*.db-journal

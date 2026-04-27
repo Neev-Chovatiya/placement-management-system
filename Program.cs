@@ -67,9 +67,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add ApplicationDbContext with SQL Server
+// Add ApplicationDbContext with SQLite
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -80,7 +80,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.Migrate();
+        context.Database.EnsureCreated();
     }
     catch (Exception ex)
     {
