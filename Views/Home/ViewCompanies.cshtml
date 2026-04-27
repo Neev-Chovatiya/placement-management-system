@@ -1,0 +1,221 @@
+@model pms.Models.ViewCompaniesViewModel
+<!--
+    NOTE FOR ASP.NET RAZOR PAGES IMPLEMENTATION:
+
+    1. _Layout.cshtml:
+       - If you are using a layout file, the <aside> (Sidebar) and <header> (Top bar) remain there.
+       - Make sure to add logic to your layout to dynamically set the "active" class on the sidebar links based on the current ViewContext.
+
+    2. ViewCompanies.cshtml:
+       - The content inside the <main id="dashboard-content"> tag belongs in this view.
+       - The list of companies should be generated using a Razor loop:
+foreach (var company in Model.Companies) { ... }
+-->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Companies - MSU</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Main app background
+                        surface: '#161b22',    // Sidebar and Cards
+                        surfaceHover: '#1c2128', // Hover state for lists
+                        inputBg: '#010409',    // Search input background
+                        primary: '#2f81f7',    // Blue accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8b949e;
+            }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_StudentSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="student">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Welcome Text -->
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, @(ViewBag.StudentName ?? "Student")</h2>
+
+            <!-- Logout Button -->
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" onclick="window.location.href='/Home/Index'">Logout</button>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8">
+
+            <div class="max-w-5xl mx-auto">
+                <h3 class="text-xl text-white font-medium mb-6">Companies</h3>
+
+                <!-- Search Bar -->
+                <form method="get" action="/Home/ViewCompanies" class="relative mb-6">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="h-5 w-5 text-textSecondary"></i>
+                    </div>
+                    <input type="text" name="search" value="@Context.Request.Query["search"]" placeholder="Search companies..."
+                           class="block w-full sm:w-96 pl-10 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                           onchange="this.form.submit()">
+                </form>
+
+                <!-- Companies List -->
+                <div class="flex flex-col gap-3">
+                    @if (Model.Companies != null && Model.Companies.Any())
+                    {
+                        foreach (var company in Model.Companies)
+                        {
+                            var companyInitial = !string.IsNullOrEmpty(company.CompanyName) ? company.CompanyName.Substring(0, 1).ToUpper() : "C";
+                            <!-- Company Item -->
+                            <div class="bg-surface border border-border p-3 lg:p-4 rounded-xl flex flex-col sm:flex-row sm:items-center gap-4 hover:border-border/80 transition-colors">
+                                <!-- Left Section (Logo & Name) -->
+                                <div class="flex items-center gap-4 w-full sm:w-1/4 lg:w-1/3">
+                                        <div class="w-10 h-10 rounded bg-[#21262d] flex items-center justify-center flex-shrink-0 border border-border shadow-sm overflow-hidden">
+                                            @if (company.CompanyLogo != null)
+                                            {
+                                                <img src="data:image/png;base64,@Convert.ToBase64String(company.CompanyLogo)" class="w-full h-full object-cover" />
+                                            }
+                                            else
+                                            {
+                                                <span class="font-bold text-textPrimary">@companyInitial</span>
+                                            }
+                                        </div>
+                                    <span class="text-textPrimary font-medium">@company.CompanyName</span>
+                                </div>
+
+                                <!-- Middle Section (Location) -->
+                                <div class="flex items-center gap-2 text-textSecondary w-full sm:w-1/4">
+                                    <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i>
+                                    <span class="text-sm">@(string.IsNullOrEmpty(company.Location) ? "N/A" : company.Location)</span>
+                                </div>
+
+                                <!-- Middle Section (Date) -->
+                                <div class="flex items-center gap-2 text-textSecondary w-full sm:w-1/4">
+                                    <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+                                    <span class="text-sm">@(company.VisitDate?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+                                </div>
+
+                                <!-- Right Section (Action) -->
+                                <div class="w-full sm:w-auto ml-auto flex justify-end">
+                                    <a href="/Home/JobOpenings?companyId=@company.CompanyID" class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors w-full sm:w-auto text-center">
+                                        View Jobs
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-textSecondary py-8">
+                            No companies found.
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 mt-8 mb-4">
+                    
+                    <!-- Rows Per Page Selector -->
+                    <div class="flex items-center gap-3 text-sm text-textSecondary">
+                        <span>Rows per page:</span>
+                        <select onchange="window.location.href='?search=@Context.Request.Query["search"]&pageSize=' + this.value" 
+                                class="bg-surface border border-border rounded-md px-2 py-1 focus:outline-none focus:border-primary transition-colors">
+                            <option value="5" selected="@(Model.Companies.PageSize == 5 ? "selected" : null)">5</option>
+                            <option value="10" selected="@(Model.Companies.PageSize == 10 ? "selected" : null)">10</option>
+                            <option value="20" selected="@(Model.Companies.PageSize == 20 ? "selected" : null)">20</option>
+                        </select>
+                    </div>
+
+                    <!-- Pagination Links -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="?search=@Context.Request.Query["search"]&page=@(Model.Companies.PageIndex - 1)&pageSize=@Model.Companies.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Companies.HasPreviousPage ? "pointer-events-none opacity-50" : "")">
+                            Previous
+                        </a>
+
+                        @for (int i = 1; i <= Model.Companies.TotalPages; i++)
+                        {
+                            if (i == Model.Companies.PageIndex)
+                            {
+                                <button class="w-8 h-8 flex items-center justify-center rounded-md bg-[#1f6feb] text-white font-medium shadow-sm transition-colors">
+                                    @i
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="?search=@Context.Request.Query["search"]&page=@i&pageSize=@Model.Companies.PageSize"
+                                   class="w-8 h-8 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        <a href="?search=@Context.Request.Query["search"]&page=@(Model.Companies.PageIndex + 1)&pageSize=@Model.Companies.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Companies.HasNextPage ? "pointer-events-none opacity-50" : "")">
+                            Next
+                        </a>
+                    </div>
+
+                    <!-- Total Items Info -->
+                    <div class="text-sm text-textSecondary">
+                        Showing @Model.Companies.TotalItems companies
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

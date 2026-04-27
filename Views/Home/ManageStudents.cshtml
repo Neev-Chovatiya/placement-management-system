@@ -1,0 +1,356 @@
+@model pms.Models.ManageStudentsViewModel
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students - MSU Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Main app background
+                        surface: '#161b22',    // Sidebar and Cards
+                        surfaceHover: '#1c2128', // Hover state for lists
+                        primary: '#2f81f7',    // Blue accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d',
+                        danger: '#f85149'      // Red for delete actions
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8b949e;
+            }
+
+        /* Custom checkbox styling for dark theme */
+        input[type="checkbox"] {
+            appearance: none;
+            background-color: #0d1117;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.15em;
+            height: 1.15em;
+            border: 1px solid #30363d;
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+        }
+
+            input[type="checkbox"]::before {
+                content: "";
+                width: 0.65em;
+                height: 0.65em;
+                transform: scale(0);
+                transition: 120ms transform ease-in-out;
+                box-shadow: inset 1em 1em #2f81f7;
+                transform-origin: center;
+                clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+            }
+
+            input[type="checkbox"]:checked::before {
+                transform: scale(1);
+            }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_AdminSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="admin">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Welcome Text -->
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, Admin</h2>
+
+            <!-- Logout Button -->
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" onclick="window.location.href='/Users/Logout'">Logout</button>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col">
+
+            <div class="max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
+
+                <!-- Page Header & Stats -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                    <h3 class="text-xl text-white font-medium">Manage Students</h3>
+                    <span class="text-sm text-textSecondary">Showing @Model.Students.Count items on this page (Total: @Model.Students.TotalItems)</span>
+                </div>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
+                            <span>@Html.Raw(TempData["Success"])</span>
+                        </div>
+                        @if (TempData["MailUrl"] != null)
+                        {
+                            <a href="@TempData["MailUrl"]" target="_blank" 
+                               class="bg-[#238636] hover:bg-[#2ea043] text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap">
+                                <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                                Open Gmail to Send
+                            </a>
+                        }
+                    </div>
+                }
+
+                <!-- Action Toolbar -->
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+
+                    <div class="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
+                        <form method="get" asp-action="ManageStudents" class="flex flex-wrap items-center gap-4 w-full">
+                            <!-- Basic Search -->
+                            <div class="relative w-full sm:w-64">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="search" class="h-4 w-4 text-textSecondary"></i>
+                                </div>
+                                <input type="text" name="search" value="@Context.Request.Query["search"]" placeholder="Search name/enrollment..."
+                                       class="block w-full pl-10 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                            </div>
+
+                            <!-- 
+                                Branch Filter: Synchronized with the 9 branches used in student registration.
+                                Allows admins to filter students by their specific engineering or management stream.
+                            -->
+                            <div class="relative w-full sm:w-40">
+                                <select name="branch" class="appearance-none block w-full pl-3 pr-10 py-2.5 bg-surface border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                                    <option value="">All Branches</option>
+                                    <option value="Computer Engineering" selected='@(Context.Request.Query["branch"] == "Computer Engineering" ? "selected" : null)'>Computer Engineering</option>
+                                    <option value="Information Technology" selected='@(Context.Request.Query["branch"] == "Information Technology" ? "selected" : null)'>Information Technology</option>
+                                    <option value="Electronics & Communication" selected='@(Context.Request.Query["branch"] == "Electronics & Communication" ? "selected" : null)'>Electronics & Communication</option>
+                                    <option value="Mechanical Engineering" selected='@(Context.Request.Query["branch"] == "Mechanical Engineering" ? "selected" : null)'>Mechanical Engineering</option>
+                                    <option value="Civil Engineering" selected='@(Context.Request.Query["branch"] == "Civil Engineering" ? "selected" : null)'>Civil Engineering</option>
+                                    <option value="Electrical Engineering" selected='@(Context.Request.Query["branch"] == "Electrical Engineering" ? "selected" : null)'>Electrical Engineering</option>
+                                    <option value="Chemical Engineering" selected='@(Context.Request.Query["branch"] == "Chemical Engineering" ? "selected" : null)'>Chemical Engineering</option>
+                                    <option value="MCA" selected='@(Context.Request.Query["branch"] == "MCA" ? "selected" : null)'>MCA</option>
+                                    <option value="MBA" selected='@(Context.Request.Query["branch"] == "MBA" ? "selected" : null)'>MBA</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                                </div>
+                            </div>
+
+                            <!-- CGPA Filter -->
+                            <div class="relative w-full sm:w-32">
+                                <input type="number" step="0.01" min="0" max="10" name="minCGPA" value="@Context.Request.Query["minCGPA"]" placeholder="Min CGPA"
+                                       class="block w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                            </div>
+
+                            <!-- Passing Year Filter -->
+                            <div class="relative w-full sm:w-32">
+                                <input type="number" min="2020" max="2035" name="passingYear" value="@Context.Request.Query["passingYear"]" placeholder="Year"
+                                       class="block w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                            </div>
+
+                            <!-- Placement Status Filter -->
+                            <div class="relative w-full sm:w-40">
+                                <select name="isPlaced" class="appearance-none block w-full pl-3 pr-10 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                                    <option value="">All Status</option>
+                                    <option value="true" selected='@(Context.Request.Query["isPlaced"] == "true" ? "selected" : null)'>Placed</option>
+                                    <option value="false" selected='@(Context.Request.Query["isPlaced"] == "false" ? "selected" : null)'>Not Placed</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                                Filter
+                            </button>
+                            
+                            <a href="/Home/ManageStudents" class="text-textSecondary hover:text-white text-sm transition-colors px-2">Clear</a>
+                        </form>
+                    </div>
+
+                    <!-- Add Button -->
+                    <a href="@Url.Action("AddStudent", "Home")" class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap w-full lg:w-auto justify-center">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Add New Student
+                    </a>
+
+                </div>
+
+                <!-- Data Table -->
+                <div class="bg-surface border border-border rounded-xl overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+
+                        <!-- Table Head -->
+                        <thead>
+                            <tr class="border-b border-border bg-[#1c2128]/50">
+                                <th class="py-3 px-4 w-16 text-center text-textPrimary font-medium text-sm">
+                                    Photo
+                                </th>
+                                <th class="py-3 px-4 text-textPrimary font-medium text-sm">Enrollment No</th>
+                                <th class="py-3 px-4 text-textPrimary font-medium text-sm">Name</th>
+                                <th class="py-3 px-4 text-textPrimary font-medium text-sm">Branch</th>
+                                <th class="py-3 px-4 text-textPrimary font-medium text-sm">Passing Year</th>
+                                <th class="py-3 px-4 text-textPrimary font-medium text-sm">CGPA</th>
+                                <th class="py-3 px-4 text-textPrimary font-medium text-sm">Placement Status</th>
+                                <th class="py-3 px-4 text-textPrimary font-medium text-sm text-right">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <!-- Table Body -->
+
+                        <tbody class="text-sm">
+                        @foreach (var student in Model.Students)
+                        {
+                            <tr class="border-b border-border hover:bg-surfaceHover transition-colors group">
+                                <td class="py-3 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        @if (student.ProfilePicture != null)
+                                        {
+                                            @* Display student's profile picture from binary data using Base64 encoding *@
+                                            <img src="data:image/png;base64,@Convert.ToBase64String(student.ProfilePicture)" class="w-10 h-10 rounded-full object-cover border border-border shadow-sm" alt="Profile">
+                                        }
+                                        else
+                                        {
+                                            @* Fallback icon for students without a profile picture *@
+                                            <div class="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-textSecondary shadow-sm">
+                                                <i data-lucide="user" class="w-5 h-5"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-textSecondary font-medium">@student.EnrollmentNo</td>
+                                <td class="py-3 px-4 text-textPrimary font-medium">@student.FullName</td>
+                                <td class="py-3 px-4 text-textSecondary">@student.Branch</td>
+                                <td class="py-3 px-4 text-textSecondary">@student.PassingYear</td>
+                                <td class="py-3 px-4 text-textSecondary">@student.CGPA</td>
+                                <td class="py-3 px-4">
+                                    @if (student.Placement != null)
+                                    {
+                                        <span class="inline-block bg-[#238636] text-white px-2.5 py-1 rounded-md text-xs font-medium border border-[#2ea043]/40">Placed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-block bg-[#d29922] text-white px-2.5 py-1 rounded-md text-xs font-medium border border-[#e3b341]/40">Not Placed</span>
+                                    }
+                                </td>
+                                <td class="py-3 px-4 text-right">
+                                    <div class="flex items-center justify-end gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                                         <a asp-action="SendNotification" asp-route-studentId="@student.StudentID" class="text-orange-400 hover:text-orange-300 flex items-center gap-1.5 transition-colors" title="Send Notification">
+                                             <i data-lucide="bell" class="w-3.5 h-3.5"></i> Notify
+                                         </a>
+                                        <a asp-action="EditStudent" asp-route-id="@student.StudentID" class="text-[#58a6ff] hover:text-white flex items-center gap-1.5 transition-colors">
+                                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
+                                        </a>
+                                        <form asp-action="DeleteStudent" asp-route-id="@student.StudentID" method="post" style="display:inline">
+                                            <button type="submit" class="text-danger hover:text-[#ff7b72] flex items-center gap-1.5 transition-colors" onclick="return confirm('Are you sure you want to delete this student?');">
+                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination & Footer text -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 mt-8 mb-4">
+                    
+                    <div class="flex items-center gap-3 text-sm text-textSecondary">
+                        <span>Rows per page:</span>
+                        <select onchange="window.location.href='?search=@Context.Request.Query["search"]&branch=@Context.Request.Query["branch"]&minCGPA=@Context.Request.Query["minCGPA"]&passingYear=@Context.Request.Query["passingYear"]&isPlaced=@Context.Request.Query["isPlaced"]&pageSize=' + this.value" 
+                                class="bg-surface border border-border rounded-md px-2 py-1 focus:outline-none focus:border-primary transition-colors">
+                            <option value="5" selected="@(Model.Students.PageSize == 5 ? "selected" : null)">5</option>
+                            <option value="10" selected="@(Model.Students.PageSize == 10 ? "selected" : null)">10</option>
+                            <option value="20" selected="@(Model.Students.PageSize == 20 ? "selected" : null)">20</option>
+                            <option value="50" selected="@(Model.Students.PageSize == 50 ? "selected" : null)">50</option>
+                        </select>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="?search=@Context.Request.Query["search"]&branch=@Context.Request.Query["branch"]&minCGPA=@Context.Request.Query["minCGPA"]&passingYear=@Context.Request.Query["passingYear"]&isPlaced=@Context.Request.Query["isPlaced"]&page=@(Model.Students.PageIndex - 1)&pageSize=@Model.Students.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Students.HasPreviousPage ? "pointer-events-none opacity-50" : "")">
+                            Previous
+                        </a>
+
+                        @for (int i = 1; i <= Model.Students.TotalPages; i++)
+                        {
+                            if (i == Model.Students.PageIndex)
+                            {
+                                <button class="w-8 h-8 flex items-center justify-center rounded-md bg-[#1f6feb] text-white font-medium shadow-sm transition-colors cursor-default">
+                                    @i
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="?search=@Context.Request.Query["search"]&branch=@Context.Request.Query["branch"]&minCGPA=@Context.Request.Query["minCGPA"]&passingYear=@Context.Request.Query["passingYear"]&isPlaced=@Context.Request.Query["isPlaced"]&page=@i&pageSize=@Model.Students.PageSize"
+                                   class="w-8 h-8 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        <a href="?search=@Context.Request.Query["search"]&branch=@Context.Request.Query["branch"]&minCGPA=@Context.Request.Query["minCGPA"]&passingYear=@Context.Request.Query["passingYear"]&isPlaced=@Context.Request.Query["isPlaced"]&page=@(Model.Students.PageIndex + 1)&pageSize=@Model.Students.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Students.HasNextPage ? "pointer-events-none opacity-50" : "")">
+                            Next
+                        </a>
+                    </div>
+
+                    <!-- Total Items Info -->
+                    <div class="text-sm text-textSecondary text-right">
+                        <div>Showing @((Model.Students.PageIndex - 1) * Model.Students.PageSize + 1) to @Math.Min(Model.Students.PageIndex * Model.Students.PageSize, Model.Students.TotalItems) of @Model.Students.TotalItems Students</div>
+                        <div class="opacity-60 text-xs mt-1">Last updated: @DateTime.Now.ToString("MMM d, yyyy")</div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+

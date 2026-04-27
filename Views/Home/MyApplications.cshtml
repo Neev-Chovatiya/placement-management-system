@@ -1,0 +1,165 @@
+@model IEnumerable<pms.Models.Application>
+@{
+    var studentName = ViewBag.StudentName as string ?? "Student";
+}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications - PMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117',
+                        surface: '#161b22',
+                        surfaceHover: '#1c2128',
+                        primary: '#2f81f7',
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b949e; }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_StudentSidebar" />
+
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="student">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, @studentName</h2>
+            <a href="/Users/Logout" class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">Logout</a>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-6xl mx-auto">
+                <h3 class="text-xl text-white font-medium mb-6">My Applications</h3>
+
+                @if (!Model.Any())
+                {
+                    <!-- Empty State -->
+                    <div class="bg-surface border border-border rounded-xl p-16 text-center">
+                        <i data-lucide="file-text" class="w-12 h-12 mx-auto mb-4 text-textSecondary opacity-30"></i>
+                        <p class="text-lg text-textSecondary">You haven't applied to any jobs yet.</p>
+                        <a href="/Home/JobOpenings" class="mt-4 inline-block bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors">
+                            Browse Job Openings
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <!-- Summary Stats -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                        @{
+                            var total      = Model.Count();
+                            var applied    = Model.Count(a => a.Status == "Applied");
+                            var shortlisted = Model.Count(a => a.Status == "Shortlisted" || a.Status == "Interview");
+                            var selected   = Model.Count(a => a.Status == "Selected");
+                            var rejected   = Model.Count(a => a.Status == "Rejected");
+                        }
+                        <div class="bg-surface border border-border rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-white">@total</div>
+                            <div class="text-xs text-textSecondary mt-1">Total</div>
+                        </div>
+                        <div class="bg-surface border border-border rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-[#2f81f7]">@applied</div>
+                            <div class="text-xs text-textSecondary mt-1">Applied</div>
+                        </div>
+                        <div class="bg-surface border border-border rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-[#d29922]">@shortlisted</div>
+                            <div class="text-xs text-textSecondary mt-1">Shortlisted</div>
+                        </div>
+                        <div class="bg-surface border border-border rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-[#238636]">@selected</div>
+                            <div class="text-xs text-textSecondary mt-1">Selected</div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="bg-surface border border-border rounded-xl overflow-x-auto shadow-sm">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
+                            <thead>
+                                <tr>
+                                    <th class="py-4 px-6 text-textPrimary font-medium border-b border-r border-border w-[25%]">Company</th>
+                                    <th class="py-4 px-6 text-textPrimary font-medium border-b border-r border-border w-[30%]">Job Role</th>
+                                    <th class="py-4 px-6 text-textPrimary font-medium border-b border-r border-border w-[20%]">Package</th>
+                                    <th class="py-4 px-6 text-textPrimary font-medium border-b border-r border-border w-[15%]">Applied Date</th>
+                                    <th class="py-4 px-6 text-textPrimary font-medium border-b border-border w-[10%] text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                @foreach (var app in Model)
+                                {
+                                    var companyName = app.Job?.Company?.CompanyName ?? "N/A";
+                                    var initial = companyName.Length > 0 ? companyName.Substring(0, 1).ToUpper() : "?";
+                                    var jobRole = app.Job?.JobRole ?? "N/A";
+                                    var package = app.Job?.Package.ToString("0.##") ?? "N/A";
+                                    var appliedDate = app.AppliedDate.ToString("MMM dd, yyyy");
+
+                                    string badgeCss = app.Status switch
+                                    {
+                                        "Applied"     => "bg-[#1f6feb] text-white",
+                                        "Shortlisted" => "bg-[#d29922] text-white",
+                                        "Interview"   => "bg-[#9a6700] text-white",
+                                        "Selected"    => "bg-[#238636] text-white",
+                                        "Rejected"    => "bg-[#da3633] text-white",
+                                        _             => "bg-[#30363d] text-textPrimary"
+                                    };
+
+                                    <tr class="hover:bg-surfaceHover transition-colors">
+                                        <td class="py-4 px-6 border-b border-r border-border">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded bg-[#21262d] border border-border flex items-center justify-center flex-shrink-0">
+                                                    <span class="font-bold text-sm text-textPrimary">@initial</span>
+                                                </div>
+                                                <span class="text-textPrimary">@companyName</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6 border-b border-r border-border text-textSecondary">@jobRole</td>
+                                        <td class="py-4 px-6 border-b border-r border-border text-textSecondary">@package LPA</td>
+                                        <td class="py-4 px-6 border-b border-r border-border text-textSecondary">@appliedDate</td>
+                                        <td class="py-4 px-6 border-b border-border text-center">
+                                            <span class="inline-block @badgeCss px-3 py-1 rounded-md text-xs font-medium min-w-[80px]">
+                                                @app.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 text-center text-sm text-textSecondary">
+                        @Model.Count() application@(Model.Count() == 1 ? "" : "s") total
+                    </div>
+                }
+            </div>
+        </main>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+@model pms.Models.SignUpViewModel
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - MSU FTE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117',
+                        surface: '#161b22',
+                        inputBg: '#010409',
+                        primary: '#2f81f7',
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        select option { background-color: #161b22; color: #c9d1d9; }
+        .role-card input[type="radio"]:checked + label {
+            border-color: #2f81f7;
+            background-color: rgba(47,129,247,0.08);
+            color: #fff;
+        }
+        .role-card input[type="radio"]:checked + label .role-icon { color: #2f81f7; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-center px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full border-b border-[#30363d]/50 md:border-none">
+        <div class="flex items-center gap-3 mb-4 md:mb-0">
+            <div class="bg-surface border border-[#30363d] p-2 rounded-lg">
+                <i data-lucide="graduation-cap" class="text-[#2f81f7] w-8 h-8"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white leading-tight">MSU</h1>
+                <p class="text-xs text-[#8b949e] uppercase tracking-wider">FTE</p>
+            </div>
+        </div>
+        <nav class="flex gap-6 text-sm font-medium">
+            <a href="/Home/Index" class="text-[#c9d1d9] hover:text-white transition-colors">Home</a>
+            <a href="/Users/Login" class="text-[#c9d1d9] hover:text-white transition-colors">Login</a>
+            <a href="#" class="text-[#2f81f7]">Sign Up</a>
+        </nav>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-[#161b22] border border-[#30363d] rounded-2xl w-full max-w-md p-8 shadow-2xl shadow-black/50 relative overflow-hidden">
+
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-[#2f81f7]/5 blur-3xl rounded-full pointer-events-none"></div>
+
+            <!-- Step indicator -->
+            <div class="flex items-center justify-center gap-2 mb-6 relative z-10">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-7 h-7 rounded-full bg-[#2f81f7] text-white flex items-center justify-center text-xs font-bold">1</div>
+                    <span class="text-xs text-white font-medium">Account Info</span>
+                </div>
+                <div class="w-8 h-px bg-[#30363d]"></div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-7 h-7 rounded-full bg-[#30363d] text-[#8b949e] flex items-center justify-center text-xs font-bold">2</div>
+                    <span class="text-xs text-[#8b949e]">Details</span>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-semibold text-white text-center mb-2 relative z-10">Create Your Account</h2>
+            <p class="text-sm text-[#8b949e] text-center mb-6 relative z-10">Step 1 of 2 — Choose your role and enter credentials</p>
+
+            <form asp-action="SignUp" asp-controller="Users" method="post" class="space-y-5 relative z-10">
+                @Html.AntiForgeryToken()
+
+                @if (ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="bg-red-900/40 border border-red-700/50 text-red-300 rounded-lg px-3 py-2 text-sm">
+                        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@err.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                <!-- Role Selection -->
+                <div>
+                    <label class="block text-sm text-[#8b949e] mb-2">Select Role</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="role-card">
+                            <input type="radio" id="role-student" name="Role" value="Student" class="sr-only" checked>
+                            <label for="role-student" class="flex flex-col items-center gap-2 p-4 border border-[#30363d] rounded-xl cursor-pointer transition-all text-[#8b949e] hover:border-[#2f81f7]/50">
+                                <i data-lucide="graduation-cap" class="role-icon w-6 h-6"></i>
+                                <span class="text-sm font-medium">Student</span>
+                            </label>
+                        </div>
+                        <div class="role-card">
+                            <input type="radio" id="role-admin" name="Role" value="Admin" class="sr-only">
+                            <label for="role-admin" class="flex flex-col items-center gap-2 p-4 border border-[#30363d] rounded-xl cursor-pointer transition-all text-[#8b949e] hover:border-[#2f81f7]/50">
+                                <i data-lucide="shield" class="role-icon w-6 h-6"></i>
+                                <span class="text-sm font-medium">Admin</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Username -->
+                <div>
+                    <label for="Username" class="block text-sm text-[#8b949e] mb-1.5">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="user" class="h-4 w-4 text-[#8b949e]"></i>
+                        </div>
+                        <input asp-for="Username" type="text" placeholder="Choose a username"
+                               class="block w-full pl-10 pr-3 py-2.5 bg-[#010409] border border-[#30363d] rounded-lg text-sm text-[#c9d1d9] placeholder-[#8b949e]/70 focus:outline-none focus:ring-1 focus:ring-[#2f81f7] focus:border-[#2f81f7] transition-colors" required>
+                    </div>
+                    <span asp-validation-for="Username" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="Email" class="block text-sm text-[#8b949e] mb-1.5">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="mail" class="h-4 w-4 text-[#8b949e]"></i>
+                        </div>
+                        <input asp-for="Email" type="email" placeholder="your@email.com"
+                               class="block w-full pl-10 pr-3 py-2.5 bg-[#010409] border border-[#30363d] rounded-lg text-sm text-[#c9d1d9] placeholder-[#8b949e]/70 focus:outline-none focus:ring-1 focus:ring-[#2f81f7] focus:border-[#2f81f7] transition-colors" required>
+                    </div>
+                    <span asp-validation-for="Email" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="Password" class="block text-sm text-[#8b949e] mb-1.5">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="h-4 w-4 text-[#8b949e]"></i>
+                        </div>
+                        <input asp-for="Password" type="password" id="password" placeholder="Minimum 6 characters" minlength="6"
+                               class="block w-full pl-10 pr-10 py-2.5 bg-[#010409] border border-[#30363d] rounded-lg text-sm text-[#c9d1d9] placeholder-[#8b949e]/70 focus:outline-none focus:ring-1 focus:ring-[#2f81f7] focus:border-[#2f81f7] transition-colors" required>
+                        <button type="button" onclick="togglePwd('password', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8b949e] hover:text-white transition-colors">
+                            <i data-lucide="eye-off" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label for="ConfirmPassword" class="block text-sm text-[#8b949e] mb-1.5">Confirm Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="h-4 w-4 text-[#8b949e]"></i>
+                        </div>
+                        <input asp-for="ConfirmPassword" type="password" id="confirm-password" placeholder="Re-enter your password"
+                               class="block w-full pl-10 pr-10 py-2.5 bg-[#010409] border border-[#30363d] rounded-lg text-sm text-[#c9d1d9] placeholder-[#8b949e]/70 focus:outline-none focus:ring-1 focus:ring-[#2f81f7] focus:border-[#2f81f7] transition-colors" required>
+                        <button type="button" onclick="togglePwd('confirm-password', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8b949e] hover:text-white transition-colors">
+                            <i data-lucide="eye-off" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit"
+                            class="w-full bg-[#1f6feb] hover:bg-[#388bfd] text-white font-medium py-2.5 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#2f81f7] focus:ring-offset-2 focus:ring-offset-[#161b22] tracking-wide flex items-center justify-center gap-2">
+                        <span>Continue</span>
+                        <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                    </button>
+                </div>
+
+                <p class="text-center text-sm text-[#8b949e] pt-1">
+                    Already have an account?
+                    <a href="/Users/Login" class="text-[#2f81f7] hover:text-[#388bfd] transition-colors font-medium">Sign In</a>
+                </p>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        function togglePwd(id, btn) {
+            const input = document.getElementById(id);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye-off');
+            }
+            lucide.createIcons();
+        }
+
+        // Highlight selected role card on click
+        document.querySelectorAll('.role-card input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => lucide.createIcons());
+        });
+    </script>
+</body>
+</html>

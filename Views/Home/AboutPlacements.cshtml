@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Placements - MSU Institute</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117',
+                        surface: '#161b22',
+                        primary: '#2f81f7',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-sans">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-16 gap-6 md:gap-0">
+            <a href="/" class="flex items-center gap-3">
+                <div class="bg-surface border border-border p-2 rounded-lg">
+                    <i data-lucide="graduation-cap" class="text-primary w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white leading-tight">MSU</h1>
+                    <p class="text-xs text-textSecondary uppercase tracking-wider">FTE</p>
+                </div>
+            </a>
+            <nav class="flex gap-6 text-sm font-medium">
+                <a href="/" class="text-textPrimary hover:text-white transition-colors">Home</a>
+                <a asp-action="AboutPlacements" asp-controller="Home" class="text-primary border-b-2 border-primary pb-1">About Placements</a>
+                <a asp-action="Companies" asp-controller="Home" class="text-textPrimary hover:text-white transition-colors">Companies</a>
+                <a href="/Home/Login" class="text-textPrimary hover:text-white transition-colors">Login</a>
+            </nav>
+        </header>
+
+        <main class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-bold text-white mb-8">About Our Placement Cell</h2>
+            
+            <div class="space-y-12">
+                <section>
+                    <h3 class="text-2xl font-semibold text-primary mb-4">Our Mission</h3>
+                    <p class="text-lg text-textSecondary leading-relaxed">
+                        The Training and Placement Cell at MSU FTE is dedicated to bridging the gap between academia and industry. Our primary mission is to provide students with the necessary skills, training, and opportunities to launch successful careers in their chosen fields.
+                    </p>
+                </section>
+
+                <section class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-surface border border-border p-8 rounded-2xl">
+                        <i data-lucide="users" class="text-primary w-10 h-10 mb-4"></i>
+                        <h4 class="text-xl font-bold text-white mb-2">Student Centric</h4>
+                        <p class="text-textSecondary">We provide personalized career counseling, resume building workshops, and mock interview sessions.</p>
+                    </div>
+                    <div class="bg-surface border border-border p-8 rounded-2xl">
+                        <i data-lucide="handshake" class="text-primary w-10 h-10 mb-4"></i>
+                        <h4 class="text-xl font-bold text-white mb-2">Industry Ties</h4>
+                        <p class="text-textSecondary">We maintain strong relationships with over 500+ global industry partners to ensure diverse placement opportunities.</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-2xl font-semibold text-primary mb-4">Placement Process</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-primary/20 text-primary w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                            <div>
+                                <h5 class="text-white font-bold">Registration</h5>
+                                <p class="text-textSecondary text-sm">Students register on the portal and upload their latest academic details and resumes.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-primary/20 text-primary w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                            <div>
+                                <h5 class="text-white font-bold">Skill Enhancement</h5>
+                                <p class="text-textSecondary text-sm">Mandatory training sessions on technical skills, aptitude, and soft skills.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-primary/20 text-primary w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                            <div>
+                                <h5 class="text-white font-bold">Application</h5>
+                                <p class="text-textSecondary text-sm">Applying for suitable job openings based on eligibility criteria set by companies.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-primary/20 text-primary w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold">4</div>
+                            <div>
+                                <h5 class="text-white font-bold">Selection</h5>
+                                <p class="text-textSecondary text-sm">Participating in company-specific recruitment drives involving tests and interviews.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="mt-20 py-8 border-t border-border text-center text-textSecondary text-sm">
+            &copy; @DateTime.Now.Year MSU FTE. All rights reserved.
+        </footer>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

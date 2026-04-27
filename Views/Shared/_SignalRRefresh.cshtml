@@ -1,0 +1,19 @@
+<!-- SignalR Live Refresh Client -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+<script>
+    (function () {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/refreshHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("ReceiveRefresh", function () {
+            console.log("Live Refresh signal received. Reloading...");
+            location.reload();
+        });
+
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+    })();
+</script>

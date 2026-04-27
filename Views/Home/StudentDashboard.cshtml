@@ -1,0 +1,208 @@
+<!-- 
+    NOTE FOR ASP.NET RAZOR PAGES IMPLEMENTATION:
+    
+    1. _Layout.cshtml:
+       - The <aside> (Sidebar) and the <header> (Top bar with Welcome & Logout) should ideally go into your _Layout.cshtml or a specialized _DashboardLayout.cshtml.
+       - The <main> tag below is where you would place your RenderBody() in the layout.
+       
+    2. StudentDashboard.cshtml:
+       - Only the content INSIDE the <main id="dashboard-content"> tag needs to go into your actual page view.
+       - You can replace hardcoded values (like "Neev", "42", "15") with Razor model bindings, e.g., Model.StudentName, Model.TotalJobs.
+-->
+@model pms.Models.StudentDashboardViewModel
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - MSU</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Main app background
+                        surface: '#161b22',    // Sidebar and Cards
+                        surfaceHover: '#1c2128', // Hover state for lists
+                        primary: '#2f81f7',    // Blue accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        /* Custom scrollbar for a cleaner dashboard look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1117; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b949e; 
+        }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_StudentSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+        
+        <!-- TOP HEADER (Move to _Layout.cshtml) -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <!-- Mobile Menu Button (Visible only on small screens) -->
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="student">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Welcome Text & Profile Picture -->
+            <div class="flex items-center gap-4 ml-4 md:ml-0">
+                <div class="w-9 h-9 rounded-full bg-[#21262d] border border-border overflow-hidden hidden sm:block">
+                    @if (Model.Student?.ProfilePicture != null)
+                    {
+                        <img src="data:image/png;base64,@Convert.ToBase64String(Model.Student.ProfilePicture)" class="w-full h-full object-cover" />
+                    }
+                    else
+                    {
+                        <div class="w-full h-full flex items-center justify-center text-xs font-bold text-textSecondary uppercase">
+                            @(Model.Student?.FullName?[0].ToString() ?? "S")
+                        </div>
+                    }
+                </div>
+                <h2 class="text-xl text-white font-medium">Welcome, @(Model?.Student?.FullName ?? "Student")</h2>
+            </div>
+
+            <!-- Logout Button -->
+            <!-- In ASP.NET, this is usually inside a form: <form asp-area="" asp-page="/Account/Logout" method="post"> -->
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" onclick="window.location.href='/Users/Logout'">Logout</button>
+        </header>
+
+        <!-- DASHBOARD CONTENT (This goes in StudentDashboard.cshtml) -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8">
+            
+            <div class="max-w-6xl mx-auto">
+                <h3 class="text-xl text-white font-medium mb-6">My Dashboard</h3>
+
+                <!-- Top Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    
+                    <!-- Card 1: Total Jobs -->
+                    <div class="bg-[#1c212b] border border-[#30363d] rounded-xl p-6 flex items-center justify-between shadow-sm hover:border-border/80 transition-colors">
+                        <div>
+                            <p class="text-textPrimary mb-2 text-sm font-medium">Total Jobs Available</p>
+                            <p class="text-4xl font-semibold text-[#58a6ff]">@Model.TotalJobsAvailable</p>
+                        </div>
+                        <i data-lucide="briefcase" class="w-10 h-10 text-textSecondary stroke-[1.5]"></i>
+                    </div>
+
+                    <!-- Card 2: Applications Submitted -->
+                    <div class="bg-[#1c212b] border border-[#30363d] rounded-xl p-6 flex items-center justify-between shadow-sm hover:border-border/80 transition-colors">
+                        <div>
+                            <p class="text-textPrimary mb-2 text-sm font-medium">Applications Submitted</p>
+                            <p class="text-4xl font-semibold text-[#58a6ff]">@Model.ApplicationsSubmitted</p>
+                        </div>
+                        <i data-lucide="pencil" class="w-10 h-10 text-textSecondary stroke-[1.5]"></i>
+                    </div>
+
+                    <!-- Card 3: Interview Calls -->
+                    <div class="bg-[#1c212b] border border-[#30363d] rounded-xl p-6 flex items-center justify-between shadow-sm hover:border-border/80 transition-colors">
+                        <div>
+                            <p class="text-textPrimary mb-2 text-sm font-medium">Interview Calls</p>
+                            <p class="text-4xl font-semibold text-[#58a6ff]">@Model.InterviewCalls</p>
+                        </div>
+                        <i data-lucide="mic" class="w-10 h-10 text-textSecondary stroke-[1.5]"></i>
+                    </div>
+
+                </div>
+
+                <!-- Recent Notifications List -->
+                <div class="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
+                    
+                    <!-- Header -->
+                    <div class="px-6 py-4 border-b border-border bg-[#1c212b]/50">
+                        <h4 class="text-lg text-white font-medium">Notifications</h4>
+                    </div>
+
+                    <!-- List container -->
+                    <div class="divide-y divide-border">
+                        
+                        @if (Model.Notifications != null && Model.Notifications.Any())
+                        {
+                            foreach (var notification in Model.Notifications)
+                            {
+                                <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-surfaceHover transition-colors gap-4 sm:gap-0">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-full bg-[#21262d] flex items-center justify-center flex-shrink-0 border border-border/50">
+                                            <i data-lucide="bell" class="w-5 h-5 text-textSecondary">@(notification.IsRead ? "" : "!")</i>
+                                        </div>
+                                        <p class="text-textPrimary text-sm font-medium">@notification.Message</p>
+                                    </div>
+                                    <span class="text-sm text-textSecondary flex-shrink-0">@notification.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="px-6 py-8 text-center text-textSecondary">
+                                <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 opacity-50"></i>
+                                <p>You don't have any notifications.</p>
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    @if (Model.Notifications != null && Model.Notifications.TotalPages > 1)
+                    {
+                        <div class="px-6 py-4 border-t border-border bg-[#1c212b]/30 flex items-center justify-between">
+                            <div class="text-xs text-textSecondary">
+                                Showing page <span class="text-textPrimary font-medium">@Model.Notifications.PageIndex</span> of <span class="text-textPrimary font-medium">@Model.Notifications.TotalPages</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="@Url.Action("StudentDashboard", new { page = Model.Notifications.PageIndex - 1 })" 
+                                   class="px-3 py-1.5 rounded-md border border-border text-sm font-medium transition-colors @(Model.Notifications.HasPreviousPage ? "text-textPrimary hover:bg-surfaceHover hover:border-textSecondary" : "text-textSecondary opacity-30 cursor-not-allowed pointer-events-none")">
+                                    Previous
+                                </a>
+                                <a href="@Url.Action("StudentDashboard", new { page = Model.Notifications.PageIndex + 1 })" 
+                                   class="px-3 py-1.5 rounded-md border border-border text-sm font-medium transition-colors @(Model.Notifications.HasNextPage ? "text-textPrimary hover:bg-surfaceHover hover:border-textSecondary" : "text-textSecondary opacity-30 cursor-not-allowed pointer-events-none")">
+                                    Next
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+

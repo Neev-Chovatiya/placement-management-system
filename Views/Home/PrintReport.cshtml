@@ -1,0 +1,113 @@
+@model IEnumerable<pms.Models.Placement>
+@{
+    var reportType = ViewBag.ReportType as string;
+    var selectedYear = ViewBag.SelectedYear as string;
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Placement Report - @reportType.ToUpper() (@selectedYear)</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; margin: 40px; color: #333; }
+        h1 { text-align: center; color: #000; font-size: 20px; }
+        h2 { text-align: center; color: #555; font-size: 14px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; color: #000; font-weight: bold; }
+        @@media print {
+            .no-print { display: none; }
+        }
+        .footer { text-align: center; margin-top: 50px; font-size: 10px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #0066cc; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Print PDF</button>
+        <button onclick="window.history.back()" style="padding: 10px 20px; background: #eee; color: #333; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">Go Back</button>
+    </div>
+
+    <h1>MSU FTE</h1>
+    <h2>Placement Report: @reportType.ToUpper() | Year: @selectedYear</h2>
+
+    <table>
+        @if (reportType == "placed")
+        {
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Branch</th>
+                    <th>Company</th>
+                    <th>Package (LPA)</th>
+                    <th>Placement Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@(p.Student?.FullName)</td>
+                        <td>@(p.Student?.Branch)</td>
+                        <td>@(p.Company?.CompanyName)</td>
+                        <td>@p.Package</td>
+                        <td>@p.PlacementDate.Year</td>
+                    </tr>
+                }
+            </tbody>
+        }
+        else if (reportType == "company")
+        {
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Total Placed</th>
+                    <th>Average Package (LPA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model.GroupBy(p => p.Company?.CompanyName).OrderByDescending(x => x.Count()))
+                {
+                    <tr>
+                        <td>@g.Key</td>
+                        <td>@g.Count()</td>
+                        <td>@g.Average(x => x.Package).ToString("F2")</td>
+                    </tr>
+                }
+            </tbody>
+        }
+        else if (reportType == "branch")
+        {
+            <thead>
+                <tr>
+                    <th>Branch</th>
+                    <th>Total Placed</th>
+                    <th>Average Package (LPA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model.GroupBy(p => p.Student?.Branch).OrderByDescending(x => x.Count()))
+                {
+                    <tr>
+                        <td>@g.Key</td>
+                        <td>@g.Count()</td>
+                        <td>@g.Average(x => x.Package).ToString("F2")</td>
+                    </tr>
+                }
+            </tbody>
+        }
+    </table>
+
+    <div class="footer">
+        Generated on @DateTime.Now.ToString("dd MMM yyyy HH:mm")
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

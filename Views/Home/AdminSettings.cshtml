@@ -1,0 +1,172 @@
+@{
+    var lastKeyDate = ViewBag.LastKeyDate as DateTime?;
+    var generatedKey = TempData["GeneratedKey"] as string;
+    var success = TempData["Success"] as string;
+}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings - MSU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', surface: '#161b22', surfaceHover: '#1c2128',
+                        primary: '#2f81f7', primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9', textSecondary: '#8b949e', border: '#30363d'
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b949e; }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_AdminSidebar" />
+
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Admin Settings</h2>
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+                    onclick="window.location.href='/Users/Logout'">Logout</button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-2xl mx-auto">
+
+                <!-- Page Title -->
+                <div class="mb-8">
+                    <h3 class="text-xl text-white font-medium">Secret Key Management</h3>
+                    <p class="text-[#8b949e] text-sm mt-1">Generate a one-time secret key for new admin registrations. Each key replaces the previous one.</p>
+                </div>
+
+                <!-- Success / Generated Key Alert -->
+                @if (success != null)
+                {
+                    <div class="mb-6 bg-emerald-900/30 border border-emerald-700/50 rounded-xl p-5">
+                        <div class="flex items-center gap-2 text-emerald-400 font-medium mb-2">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            <span>Key Generated Successfully</span>
+                        </div>
+                        <p class="text-[#8b949e] text-sm mb-3">@success</p>
+
+                        @if (generatedKey != null)
+                        {
+                            <div class="bg-[#0d1117] border border-emerald-700/40 rounded-lg p-4 flex items-center justify-between gap-3">
+                                <code id="plain-key" class="text-emerald-300 text-sm font-mono break-all">@generatedKey</code>
+                                <button onclick="copyKey()" title="Copy" class="flex-shrink-0 text-[#8b949e] hover:text-white transition-colors">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-amber-400/80 mt-2 flex items-center gap-1.5">
+                                <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                                This key is shown only once. Copy and share it securely with the new admin.
+                            </p>
+                        }
+                    </div>
+                }
+
+                <!-- Current Key Status Card -->
+                <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-6 mb-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-[#1f2937] flex items-center justify-center">
+                            <i data-lucide="key" class="text-[#58a6ff] w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-medium">Current Secret Key Status</h4>
+                            <p class="text-[#8b949e] text-xs">Used for admin account creation</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-[#0d1117] rounded-lg p-3">
+                            <p class="text-xs text-[#8b949e] mb-1">Status</p>
+                            @if (ViewBag.HasActiveKey == true)
+                            {
+                                <span class="inline-flex items-center gap-1.5 text-sm text-emerald-400">
+                                    <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center gap-1.5 text-sm text-red-400">
+                                    <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+                                    No Key Generated
+                                </span>
+                            }
+                        </div>
+                        <div class="bg-[#0d1117] rounded-lg p-3">
+                            <p class="text-xs text-[#8b949e] mb-1">Last Generated</p>
+                            <p class="text-sm text-white">
+                                @(lastKeyDate.HasValue ? lastKeyDate.Value.ToString("dd MMM yyyy, hh:mm tt") : "Never")
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How it works info box -->
+                <div class="bg-[#1f2937]/40 border border-[#30363d] rounded-xl p-5 mb-6">
+                    <h5 class="text-white font-medium mb-3 flex items-center gap-2">
+                        <i data-lucide="info" class="w-4 h-4 text-[#58a6ff]"></i>
+                        How It Works
+                    </h5>
+                    <ul class="space-y-2 text-sm text-[#8b949e]">
+                        <li class="flex gap-2"><span class="text-[#58a6ff] font-bold">1.</span> Click "Generate New Secret Key" below.</li>
+                        <li class="flex gap-2"><span class="text-[#58a6ff] font-bold">2.</span> The key appears <strong class="text-[#c9d1d9]">only once</strong> on this page. Copy it immediately.</li>
+                        <li class="flex gap-2"><span class="text-[#58a6ff] font-bold">3.</span> Share the plain key securely with the person who needs admin access.</li>
+                        <li class="flex gap-2"><span class="text-[#58a6ff] font-bold">4.</span> They enter it during Sign Up → Admin route to create their account.</li>
+                        <li class="flex gap-2"><span class="text-[#58a6ff] font-bold">5.</span> Generating a new key <strong class="text-amber-400">invalidates the previous one</strong>.</li>
+                    </ul>
+                </div>
+
+                <!-- Generate Button -->
+                <form asp-action="GenerateSecretKey" asp-controller="Home" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit"
+                            class="w-full bg-[#1f6feb] hover:bg-[#388bfd] text-white font-medium py-3 rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#2f81f7] focus:ring-offset-2 focus:ring-offset-[#0d1117] flex items-center justify-center gap-2 text-base"
+                            onclick="return confirm('This will invalidate the current secret key. Are you sure you want to generate a new one?')">
+                        <i data-lucide="refresh-cw" class="h-5 w-5"></i>
+                        Generate New Secret Key
+                    </button>
+                </form>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        function copyKey() {
+            const key = document.getElementById('plain-key');
+            if (key) {
+                navigator.clipboard.writeText(key.innerText).then(() => {
+                    const btn = key.nextElementSibling;
+                    btn.querySelector('i').setAttribute('data-lucide', 'check');
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        btn.querySelector('i').setAttribute('data-lucide', 'copy');
+                        lucide.createIcons();
+                    }, 2000);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

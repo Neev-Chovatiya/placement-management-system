@@ -1,0 +1,206 @@
+<!--
+    NOTE FOR ASP.NET RAZOR PAGES IMPLEMENTATION:
+    1. If you are using a _Layout.cshtml, you only need to copy the content inside the <main> tag into your Login.cshtml.
+    2. Convert the <form> to use ASP.NET Tag Helpers:
+       <form method="post">
+    3. Convert <input> tags to use asp-for:
+       <input asp-for="Input.Email" class="..." />
+    4. For the role dropdown, you can use:
+       <select asp-for="Input.Role" asp-items="Model.AvailableRoles" class="...">
+-->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MSU FTE</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for consistent vector icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Very dark blue/gray
+                        surface: '#161b22',    // Card background
+                        inputBg: '#010409',    // Darker background for inputs
+                        primary: '#2f81f7',    // Vibrant blue for accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        /* Custom glow effect for the active navigation link */
+        .nav-active::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 2px;
+            background-color: #c9d1d9;
+            margin-top: 4px;
+        }
+        /* Style for standard select element in dark mode */
+        select option {
+            background-color: #161b22;
+            color: #c9d1d9;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-sans">
+
+    <!-- Header / Navigation (Matching previous layout) -->
+    <header class="flex flex-col md:flex-row justify-between items-center px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full border-b border-border/50 md:border-none">
+        <!-- Logo area -->
+        <div class="flex items-center gap-3 mb-4 md:mb-0">
+            <div class="bg-surface border border-border p-2 rounded-lg">
+                <i data-lucide="graduation-cap" class="text-primary w-8 h-8"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white leading-tight">MSU</h1>
+                <p class="text-xs text-textSecondary uppercase tracking-wider">FTE</p>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex gap-6 text-sm font-medium">
+            <a href="/" class="text-textPrimary hover:text-white transition-colors">Home</a>
+            <a asp-action="AboutPlacements" asp-controller="Home" class="text-textPrimary hover:text-white transition-colors">About Placements</a>
+            <a asp-action="Companies" asp-controller="Home" class="text-textPrimary hover:text-white transition-colors">Companies</a>
+            <a href="#" class="text-primary nav-active">Login</a>
+        </nav>
+    </header>
+
+    <!-- Main Content Area - Centered Login Card -->
+    <main class="flex-grow flex items-center justify-center p-4">
+
+        <!-- Login Card -->
+        <div class="bg-surface border border-border rounded-2xl w-full max-w-md p-8 shadow-2xl shadow-black/50 relative overflow-hidden">
+
+            <!-- Subtle background glow (optional, adds depth) -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-primary/5 blur-3xl rounded-full pointer-events-none"></div>
+
+            <h2 class="text-2xl font-semibold text-white text-center mb-8 relative z-10">Sign In to Your Account</h2>
+
+            <!-- Login Form -->
+            <form asp-action="Login" asp-controller="Users" method="post" class="space-y-5 relative z-10">
+                <!-- Validation Error Display -->
+                @if (ViewBag.Error != null)
+                {
+                    <div class="bg-red-600 text-white rounded-lg px-3 py-2 mb-2 text-sm text-center">@ViewBag.Error</div>
+                }
+
+                <!-- Email or Username Field -->
+                <div>
+                    <label for="username" class="block text-sm text-textSecondary mb-1.5">Email or Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="user" class="h-4 w-4 text-textSecondary"></i>
+                        </div>
+                        <input type="text" id="username" name="username" placeholder="Enter your email or username"
+                               class="block w-full pl-10 pr-3 py-2.5 bg-inputBg border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary/70 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors" required>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm text-textSecondary mb-1.5">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="h-4 w-4 text-textSecondary"></i>
+                        </div>
+                        <input type="password" id="password" name="password" placeholder="••••••••" minlength="6"
+                               class="block w-full pl-10 pr-10 py-2.5 bg-inputBg border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary/70 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors" required>
+                        <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-textSecondary hover:text-white transition-colors">
+                            <i data-lucide="eye-off" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Role Selection Dropdown -->
+                <div>
+                    <label for="role" class="block text-sm text-textSecondary mb-1.5">Select Role</label>
+                    <div class="relative">
+                        <select id="role" name="role"
+                                class="appearance-none block w-full pl-3 pr-10 py-2.5 bg-inputBg border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                            <option value="student">Student</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button type="submit"
+                            class="w-full bg-[#1f6feb] hover:bg-[#388bfd] text-white font-medium py-2.5 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface tracking-wide">
+                        LOGIN
+                    </button>
+                </div>
+
+                <!-- Bottom Links -->
+                <div class="flex flex-col gap-3 pt-2">
+                    <a href="/Home/ForgotPassword" class="text-xs text-textSecondary hover:text-white transition-colors w-max">Forgot Password?</a>
+                    <div class="flex items-center justify-center gap-2 text-sm">
+                        <span class="text-textSecondary text-xs">Don't have an account?</span>
+                        <a href="/Users/SignUp"
+                           class="text-xs font-semibold text-primary hover:text-primaryHover transition-colors flex items-center gap-1">
+                            <i data-lucide="user-plus" class="h-3.5 w-3.5"></i>
+                            Sign Up
+                        </a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </main>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        /**
+         * Password visibility toggle logic
+         * Switches the input type between 'password' and 'text' and updates the icon.
+         */
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function () {
+                // Toggle the type attribute
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                
+                // Toggle the Lucide icon attribute
+                const icon = this.querySelector('i');
+                if (type === 'text') {
+                    icon.setAttribute('data-lucide', 'eye');
+                } else {
+                    icon.setAttribute('data-lucide', 'eye-off');
+                }
+                
+                // Re-create icons to apply the data-lucide attribute change
+                lucide.createIcons();
+            });
+        }
+        
+        // Initialize all icons on page load
+        lucide.createIcons();
+    </script>
+</body>
+</html>

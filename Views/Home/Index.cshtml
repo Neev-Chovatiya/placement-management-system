@@ -1,0 +1,197 @@
+@model pms.Models.HomeViewModel
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Placement Management System</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for consistent vector icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Very dark blue/gray
+                        surface: '#161b22',    // Slightly lighter for cards
+                        primary: '#2f81f7',    // Vibrant blue for accents
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        /* Custom glow effect for the active navigation link */
+        .nav-active::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 2px;
+            background-color: #2f81f7;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-sans">
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+
+        <!-- Header / Navigation -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-16 gap-6 md:gap-0">
+            <!-- Logo area -->
+            <div class="flex items-center gap-3">
+                <div class="bg-surface border border-border p-2 rounded-lg">
+                    <i data-lucide="graduation-cap" class="text-primary w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white leading-tight">MSU</h1>
+                    <p class="text-xs text-textSecondary uppercase tracking-wider">FTE</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex gap-6 text-sm font-medium">
+                <a href="/" class="text-primary nav-active">Home</a>
+                <a asp-action="AboutPlacements" class="text-textPrimary hover:text-white transition-colors">About Placements</a>
+                <a asp-action="Companies" class="text-textPrimary hover:text-white transition-colors">Companies</a>
+                <a href="/Home/Login" class="text-textPrimary hover:text-white transition-colors">Login</a>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <main>
+            <div class="grid lg:grid-cols-2 gap-12 items-center mb-20">
+                <!-- Hero Text -->
+                <div class="space-y-6">
+                    <h2 class="text-4xl md:text-5xl lg:text-5xl font-bold text-[#f0f6fc] leading-tight" style="font-family: 'Times New Roman', Times, serif;">
+                        "Welcome to College Placement Management System."
+                    </h2>
+                    <p class="text-lg text-textSecondary max-w-xl">
+                        This portal helps students apply for placement opportunities and allows the
+                        Training & Placement Office to manage the placement process efficiently.
+                    </p>
+                </div>
+
+                <!-- Hero Illustration (Stylized SVG representation) -->
+                <div class="hidden lg:flex justify-end relative">
+                    <!-- Abstract glowing background -->
+                    <div class="absolute inset-0 bg-primary/10 blur-3xl rounded-full"></div>
+
+                    <!-- SVG Illustration mimicking the dashboard/analytics theme -->
+                    <svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="relative z-10">
+                        <rect x="50" y="50" width="300" height="200" rx="12" fill="#161b22" stroke="#30363d" stroke-width="2" />
+                        <!-- Chart elements inside the screen -->
+                        <path d="M80 200 L120 150 L160 170 L220 100 L280 130 L320 80" stroke="#2f81f7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="120" cy="150" r="4" fill="#2f81f7" />
+                        <circle cx="160" cy="170" r="4" fill="#2f81f7" />
+                        <circle cx="220" cy="100" r="4" fill="#2f81f7" />
+                        <circle cx="280" cy="130" r="4" fill="#2f81f7" />
+                        <!-- Bars -->
+                        <rect x="80" y="150" width="20" height="70" rx="2" fill="#238636" opacity="0.8" />
+                        <rect x="130" y="100" width="20" height="120" rx="2" fill="#238636" opacity="0.8" />
+                        <rect x="180" y="130" width="20" height="90" rx="2" fill="#238636" opacity="0.8" />
+                        <!-- Decorative UI elements -->
+                        <circle cx="70" cy="70" r="6" fill="#ea4a5a" />
+                        <circle cx="90" cy="70" r="6" fill="#e3b341" />
+                        <circle cx="110" cy="70" r="6" fill="#2ea043" />
+
+                        <!-- Floating secondary panels -->
+                        <rect x="20" y="120" width="80" height="60" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5" />
+                        <path d="M30 150 A20 20 0 1 1 70 150 A20 20 0 1 1 30 150" stroke="#8b949e" stroke-width="4" fill="none" stroke-dasharray="80" stroke-dashoffset="20" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <section class="mb-16">
+                <h3 class="text-xl font-semibold text-white mb-4">Placement Statistics</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+
+                    <!-- Stat Card 1 -->
+                    <div class="bg-surface/50 border border-border p-6 rounded-xl flex items-center justify-between hover:border-primary/50 transition-colors">
+                        <div>
+                            <p class="text-sm text-textSecondary mb-2 font-medium">Total Students Placed</p>
+                            <p class="text-4xl font-bold text-[#58a6ff]">@Model.TotalStudentsPlaced+</p>
+                        </div>
+                        <div class="bg-[#1f2937] p-4 rounded-full border border-border shadow-inner">
+                            <i data-lucide="graduation-cap" class="text-[#58a6ff] w-6 h-6"></i>
+                        </div>
+                    </div>
+
+                    <!-- Stat Card 2 -->
+                    <div class="bg-surface/50 border border-border p-6 rounded-xl flex items-center justify-between hover:border-primary/50 transition-colors">
+                        <div>
+                            <p class="text-sm text-textSecondary mb-2 font-medium">Companies Visited</p>
+                            <p class="text-4xl font-bold text-[#58a6ff]">@Model.TotalCompaniesVisited+</p>
+                        </div>
+                        <div class="bg-[#1f2937] p-4 rounded-full border border-border shadow-inner">
+                            <i data-lucide="building-2" class="text-[#58a6ff] w-6 h-6"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-textSecondary mt-3">All figures are demo data for illustrative purposes.</p>
+            </section>
+
+            <!-- Partners Section -->
+            <section class="mb-16">
+                <h3 class="text-xl font-semibold text-white mb-4">Our Top Recruiting Partners</h3>
+
+                <!-- Grid of Partners -->
+                <!-- In a Razor view, you would use a loop here:
+                    // foreach (var partner in Model.Partners) { ... }
+                    -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+
+                    @if (Model.TopRecruitingPartners != null && Model.TopRecruitingPartners.Any())
+                    {
+                        foreach (var partner in Model.TopRecruitingPartners)
+                        {
+                            <div class="bg-surface border border-border p-3 rounded-lg flex items-center gap-3 hover:bg-[#21262d] transition-colors cursor-pointer group">
+                                <i data-lucide="building-2" class="text-textSecondary group-hover:text-primary w-5 h-5 flex-shrink-0"></i>
+                                <span class="text-sm text-textPrimary font-medium truncate">@partner.CompanyName</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-span-full py-8 text-center text-textSecondary">
+                            Coming soon!
+                        </div>
+                    }
+
+                </div>
+            </section>
+
+            <!-- CTA / Login Button -->
+            <div class="flex justify-center pb-12">
+                <!-- In ASP.NET, this might be an <a asp-page="/Login"> tag -->
+                <a href="Home/Login">
+                <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white font-medium py-3 px-8 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#58a6ff] focus:ring-offset-2 focus:ring-offset-background flex items-center gap-2">
+                    <i data-lucide="log-in" class="w-5 h-5"></i>
+                    Login (Student / Admin)
+                </button>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

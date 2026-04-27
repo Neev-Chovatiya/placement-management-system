@@ -1,0 +1,389 @@
+@model pms.Models.PlacementsRegisterViewModel
+@using Microsoft.EntityFrameworkCore
+@inject pms.Data.ApplicationDbContext _context
+@{
+    //ViewData["Title"] = "Placements Register";
+}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placements Register - MSU Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Main app background
+                        surface: '#161b22',    // Sidebar and Cards
+                        surfaceHover: '#1c2128', // Hover state for lists
+                        primary: '#2f81f7',    // Blue accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8b949e;
+            }
+
+        /* Custom checkbox styling for dark theme */
+        input[type="checkbox"] {
+            appearance: none;
+            background-color: #0d1117;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.15em;
+            height: 1.15em;
+            border: 1px solid #30363d;
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+        }
+
+            input[type="checkbox"]::before {
+                content: "";
+                width: 0.65em;
+                height: 0.65em;
+                transform: scale(0);
+                transition: 120ms transform ease-in-out;
+                box-shadow: inset 1em 1em #2f81f7;
+                transform-origin: center;
+                clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+            }
+
+            input[type="checkbox"]:checked::before {
+                transform: scale(1);
+            }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_AdminSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="admin">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Welcome Text -->
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, Admin</h2>
+
+            <!-- Logout Button -->
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" onclick="window.location.href='/Home/Index'">Logout</button>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col">
+
+            <div class="max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
+
+                <form method="get" action="PlacementsRegister">
+                    <!-- Page Header & Actions -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                        <h3 class="text-xl text-white font-medium">Official Placements Register</h3>
+
+                        <!-- Filter and Download Actions -->
+                        <div class="flex items-center gap-3">
+                            <span class="text-textSecondary text-sm hidden sm:inline-block">Filters</span>
+                            
+                            <!-- Branch Dropdown -->
+                            <div class="relative w-40">
+                                <select name="branch" onchange="this.form.submit()" class="appearance-none block w-full pl-3 pr-8 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                                    <option value="all" selected="@(Model.SelectedBranch == "all")">All Branches</option>
+                                    @foreach (var br in new[] { "Computer", "IT", "EC", "Mechanical", "Civil", "Electrical", "Chemical", "MCA", "MBA" })
+                                    {
+                                        <option value="@br" selected="@(Model.SelectedBranch == br)">@br</option>
+                                    }
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i data-lucide="filter" class="h-4 w-4 text-textSecondary"></i>
+                                </div>
+                            </div>
+
+                            <!-- Year Dropdown -->
+                            <div class="relative w-32">
+                                <select name="year" onchange="this.form.submit()" class="appearance-none block w-full pl-3 pr-8 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                                    <option value="all" selected="@(Model.SelectedYear == "all")">All Years</option>
+                                    @for (int y = DateTime.Now.Year; y >= 2020; y--)
+                                    {
+                                        <option value="@y" selected="@(Model.SelectedYear == y.ToString())">@y</option>
+                                    }
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i data-lucide="calendar" class="h-4 w-4 text-textSecondary"></i>
+                                </div>
+                            </div>
+
+                            <!-- Download Button -->
+                            <button type="button" onclick="document.getElementById('downloadModal').classList.remove('hidden')" class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                Download Register
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full mb-6">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="h-4 w-4 text-textSecondary"></i>
+                        </div>
+                        <input type="text" name="search" value="@Model.SearchQuery" placeholder="Search by Name, Company, Package, Branch..."
+                               class="block w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                    </div>
+                </form>
+
+                <!-- Data Table -->
+                <div class="bg-surface border border-border rounded-xl overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+
+                        <!-- Table Head -->
+                        <thead>
+                            <tr class="border-b border-border bg-[#1c2128]/50">
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-12 text-center">Photo</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[25%]">Student Name</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[15%]">Branch</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[15%]">Company</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[15%]">Package (LPA)</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[15%]">Placement Year</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[15%]">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <!-- Table Body -->
+                        <tbody class="text-sm">
+                            @if (Model.Placements != null && Model.Placements.Any())
+                            {
+                                foreach (var item in Model.Placements)
+                                {
+                                    <tr class="border-b border-border hover:bg-surfaceHover transition-colors group">
+                                        <td class="py-3 px-4">
+                                            @if (item.Student?.ProfilePicture != null)
+                                            {
+                                                <img src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Student.ProfilePicture))" alt="Photo" class="w-8 h-8 rounded-full border border-border object-cover">
+                                            }
+                                            else
+                                            {
+                                                <div class="w-8 h-8 rounded-full bg-[#30363d] flex items-center justify-center border border-border">
+                                                    <i data-lucide="user" class="w-4 h-4 text-textSecondary"></i>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="text-textPrimary font-medium">@(item.Student?.FullName ?? "N/A")</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-textSecondary">@(item.Student?.Branch ?? "N/A")</td>
+                                        <td class="py-3 px-4 text-textSecondary">@(item.Company?.CompanyName ?? "N/A")</td>
+                                        <td class="py-3 px-4 text-textSecondary">@item.Package LPA</td>
+                                        <td class="py-3 px-4 text-textSecondary">@item.PlacementDate.Year</td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex items-center gap-3">
+                                                <a asp-action="SendNotification" asp-route-studentId="@item.StudentID" class="text-orange-400 hover:text-orange-300 flex items-center gap-1.5 transition-colors opacity-80 group-hover:opacity-100" title="Send Notification">
+                                                    <i data-lucide="bell" class="w-3.5 h-3.5"></i> Notify
+                                                </a>
+                                                <a href="/Home/PlacementDetails/@item.PlacementID" class="text-textSecondary hover:text-white flex items-center gap-1.5 transition-colors opacity-80 group-hover:opacity-100">
+                                                    <i data-lucide="file-text" class="w-4 h-4"></i> View Record
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="py-8 text-center text-textSecondary">
+                                        No placements found in the register.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Total Items Info -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 mt-8 mb-4">
+                    
+                    <!-- Rows Per Page Selector -->
+                    <div class="flex items-center gap-3 text-sm text-textSecondary">
+                        <span>Rows per page:</span>
+                        <select onchange="window.location.href='?year=@Context.Request.Query["year"]&search=@Context.Request.Query["search"]&pageSize=' + this.value" 
+                                class="bg-surface border border-border rounded-md px-2 py-1 focus:outline-none focus:border-primary transition-colors">
+                            <option value="5" selected="@(Model.Placements.PageSize == 5 ? "selected" : null)">5</option>
+                            <option value="10" selected="@(Model.Placements.PageSize == 10 ? "selected" : null)">10</option>
+                            <option value="20" selected="@(Model.Placements.PageSize == 20 ? "selected" : null)">20</option>
+                            <option value="50" selected="@(Model.Placements.PageSize == 50 ? "selected" : null)">50</option>
+                        </select>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="?year=@Model.SelectedYear&branch=@Model.SelectedBranch&search=@Model.SearchQuery&page=@(Model.Placements.PageIndex - 1)&pageSize=@Model.Placements.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Placements.HasPreviousPage ? "pointer-events-none opacity-50" : "")">
+                            Previous
+                        </a>
+
+                        @for (int i = 1; i <= Model.Placements.TotalPages; i++)
+                        {
+                            if (i == Model.Placements.PageIndex)
+                            {
+                                <button class="w-8 h-8 flex items-center justify-center rounded-md bg-[#1f6feb] text-white font-medium shadow-sm transition-colors">
+                                    @i
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="?year=@Model.SelectedYear&branch=@Model.SelectedBranch&search=@Model.SearchQuery&page=@i&pageSize=@Model.Placements.PageSize"
+                                   class="w-8 h-8 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        <a href="?year=@Model.SelectedYear&branch=@Model.SelectedBranch&search=@Model.SearchQuery&page=@(Model.Placements.PageIndex + 1)&pageSize=@Model.Placements.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Placements.HasNextPage ? "pointer-events-none opacity-50" : "")">
+                            Next
+                        </a>
+                    </div>
+
+                    <!-- Total Items Info -->
+                    <div class="text-sm text-textSecondary">
+                        Showing @((Model.Placements.PageIndex - 1) * Model.Placements.PageSize + 1) to @Math.Min(Model.Placements.PageIndex * Model.Placements.PageSize, Model.Placements.TotalItems) of @Model.Placements.TotalItems Placed Students
+                    </div>
+                </div>
+
+                <!-- Footer text -->
+                <div class="text-center pb-2 mt-4">
+                    <span class="text-sm text-textSecondary opacity-80">
+                        Register last updated: @DateTime.Now.ToString("MMMM d, yyyy")
+                    </span>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Download Modal -->
+    <div id="downloadModal" class="fixed inset-0 z-50 hidden bg-[#0d1117]/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-surface border border-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b border-border">
+                <h3 class="text-lg font-medium text-white flex items-center gap-2">
+                    <i data-lucide="download" class="w-5 h-5 text-primary"></i>
+                    Download Excel Report
+                </h3>
+                <button onclick="document.getElementById('downloadModal').classList.add('hidden')" class="text-textSecondary hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form method="get" action="/Home/DownloadRegister" class="p-5 space-y-4">
+                
+                <div>
+                    <label class="block text-sm font-medium text-textSecondary mb-1.5">Placement Year</label>
+                    <div class="relative">
+                        <select name="year" class="appearance-none block w-full pl-3 pr-8 py-2.5 bg-[#0d1117] border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                            <option value="all">All Years</option>
+                            @for (int y = DateTime.Now.Year; y >= 2020; y--)
+                            {
+                                <option value="@y">@y</option>
+                            }
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-textSecondary mb-1.5">Branch</label>
+                    <div class="relative">
+                        <select name="branch" class="appearance-none block w-full pl-3 pr-8 py-2.5 bg-[#0d1117] border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                            <option value="all">All Branches</option>
+                            @foreach (var branch in _context.Students.Select(s => s.Branch).Distinct().ToList())
+                            {
+                                if (!string.IsNullOrEmpty(branch))
+                                {
+                                    <option value="@branch">@branch</option>
+                                }
+                            }
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-textSecondary mb-1.5">Company</label>
+                    <div class="relative">
+                        <select name="companyId" class="appearance-none block w-full pl-3 pr-8 py-2.5 bg-[#0d1117] border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                            <option value="all">All Companies</option>
+                            @foreach (var company in _context.Companies.OrderBy(c => c.CompanyName).ToList())
+                            {
+                                <option value="@company.CompanyID">@company.CompanyName</option>
+                            }
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-border mt-6">
+                    <button type="button" onclick="document.getElementById('downloadModal').classList.add('hidden')" class="px-4 py-2 rounded-lg text-sm font-medium text-textSecondary hover:text-white hover:bg-surfaceHover transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" onclick="setTimeout(() => document.getElementById('downloadModal').classList.add('hidden'), 500)" class="bg-[#238636] hover:bg-[#2ea043] text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                        Download Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

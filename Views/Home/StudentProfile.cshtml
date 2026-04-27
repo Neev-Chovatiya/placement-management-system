@@ -1,0 +1,291 @@
+@model pms.Models.Student
+<!--
+    NOTE FOR ASP.NET RAZOR PAGES IMPLEMENTATION:
+
+    1. _Layout.cshtml:
+       - Update your sidebar navigation logic to set the "Profile" link (at the bottom of the sidebar) as the active item.
+
+    2. StudentProfile.cshtml:
+       - The content inside the <main id="dashboard-content"> tag belongs in this view.
+       - The profile data should be dynamically bound to your model (e.g., Model.Student.Name).
+-->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - MSU</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Main app background
+                        surface: '#161b22',    // Sidebar and Cards
+                        surfaceHover: '#1c2128', // Hover state for lists
+                        primary: '#2f81f7',    // Blue accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8b949e;
+            }
+        /* AI Output styling */
+        .ai-content strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .ai-content p {
+            margin-bottom: 0.75rem;
+        }
+
+        .ai-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_StudentSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="student">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Welcome Text -->
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, @Model.FullName</h2>
+
+            <!-- Logout Button -->
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" onclick="window.location.href='/Users/Logout'">Logout</button>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8">
+
+            <div class="max-w-6xl mx-auto h-full flex flex-col">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xl text-white font-medium">Student Profile</h3>
+                    @if (TempData["Success"] != null)
+                    {
+                        <div id="success-message" class="bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-lg text-sm">
+                            @TempData["Success"]
+                        </div>
+                        <script>
+                            setTimeout(() => {
+                                document.getElementById('success-message')?.classList.add('hidden');
+                            }, 3000);
+                        </script>
+                    }
+                </div>
+
+                <!-- Layout Container: Centered Profile Card -->
+                <div class="max-w-3xl mx-auto w-full">
+
+                    <!-- Profile Card -->
+                    <div class="bg-surface border border-border rounded-xl p-8 shadow-sm w-full transition-all hover:shadow-md">
+
+                        <!-- Avatar -->
+                        <div class="w-20 h-20 rounded-full bg-[#21262d] mx-auto mb-8 flex items-center justify-center border-2 border-border shadow-inner overflow-hidden">
+                            @if (Model.ProfilePicture != null)
+                            {
+                                <img src="data:image/png;base64,@Convert.ToBase64String(Model.ProfilePicture)" alt="@Model.FullName" class="w-full h-full object-cover">
+                            }
+                            else
+                            {
+                                <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(Model.FullName)&background=21262d&color=c9d1d9&size=128" alt="@Model.FullName" class="w-full h-full object-cover">
+                            }
+                        </div>
+
+                        <!-- User Information Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-10" id="student-data">
+                            <div class="flex items-center gap-3 text-textSecondary bg-background/30 p-3 rounded-lg border border-border/50">
+                                <i data-lucide="user" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase tracking-wider text-textSecondary/60 font-semibold">Full Name</span>
+                                    <span class="text-sm md:text-base text-textPrimary font-medium" id="student-name">@Model.FullName</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 text-textSecondary bg-background/30 p-3 rounded-lg border border-border/50">
+                                <i data-lucide="id-card" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase tracking-wider text-textSecondary/60 font-semibold">Enrollment No</span>
+                                    <span class="text-sm md:text-base text-textPrimary font-medium">@Model.EnrollmentNo</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 text-textSecondary bg-background/30 p-3 rounded-lg border border-border/50">
+                                <i data-lucide="graduation-cap" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase tracking-wider text-textSecondary/60 font-semibold">Branch</span>
+                                    <span class="text-sm md:text-base text-textPrimary font-medium" id="student-branch">@Model.Branch</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 text-textSecondary bg-background/30 p-3 rounded-lg border border-border/50">
+                                <i data-lucide="line-chart" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase tracking-wider text-textSecondary/60 font-semibold">CGPA</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-sm md:text-base text-textPrimary font-medium" id="student-cgpa">@Model.CGPA</span>
+                                        <i data-lucide="lock" class="w-3.5 h-3.5 text-textSecondary/40" title="Locked academic data"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 text-textSecondary bg-background/30 p-3 rounded-lg border border-border/50">
+                                <i data-lucide="calendar" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase tracking-wider text-textSecondary/60 font-semibold">Passing Year</span>
+                                    <span class="text-sm md:text-base text-textPrimary font-medium" id="student-year">@Model.PassingYear</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 text-textSecondary bg-background/30 p-3 rounded-lg border border-border/50">
+                                <i data-lucide="phone" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase tracking-wider text-textSecondary/60 font-semibold">Phone Number</span>
+                                    <span class="text-sm md:text-base text-textPrimary font-medium">@Model.Phone</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 text-textSecondary bg-background/30 p-3 rounded-lg border border-border/50 md:col-span-2">
+                                <i data-lucide="file-text" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] uppercase tracking-wider text-textSecondary/60 font-semibold">Professional Resume</span>
+                                    <a href="@Model.ResumeURL" target="_blank" class="text-sm md:text-base text-primary hover:text-primaryHover font-medium underline flex items-center gap-1.5 transition-colors">
+                                        View Resume
+                                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Edit Button -->
+                        <a href="@Url.Action("EditStudentProfile", "Home")" class="block w-full text-center bg-[#21262d] hover:bg-[#30363d] border border-border text-textPrimary hover:text-white py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm focus:outline-none mb-4">
+                            Edit Profile Details
+                        </a>
+
+                        <p class="text-[11px] md:text-xs text-textSecondary italic leading-relaxed text-center mb-5">
+                            *Note: Core academic data like CGPA is locked. Please contact administration for corrections.
+                        </p>
+
+                        <!-- Change Password Card -->
+                        <div class="border-t border-border pt-5">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i data-lucide="key" class="w-4 h-4 text-[#58a6ff]"></i>
+                                <h4 class="text-sm font-semibold text-white">Change Password</h4>
+                            </div>
+
+                            @if (TempData["PwdSuccess"] != null)
+                            {
+                                <div id="pwd-success" class="bg-green-500/10 border border-green-500/20 text-green-400 px-3 py-2 rounded-lg text-xs mb-3 flex items-center gap-2">
+                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                                    @TempData["PwdSuccess"]
+                                </div>
+                                <script>setTimeout(() => document.getElementById('pwd-success')?.classList.add('hidden'), 4000);</script>
+                            }
+                            @if (TempData["PwdError"] != null)
+                            {
+                                <div class="bg-red-900/30 border border-red-700/40 text-red-300 px-3 py-2 rounded-lg text-xs mb-3 flex items-center gap-2">
+                                    <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                                    @TempData["PwdError"]
+                                </div>
+                            }
+
+                            <form asp-action="ChangePassword" asp-controller="Home" method="post" class="space-y-3">
+                                @Html.AntiForgeryToken()
+                                <div>
+                                    <label class="block text-xs text-textSecondary mb-1">Current Password</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i data-lucide="lock" class="h-3.5 w-3.5 text-[#8b949e]"></i>
+                                        </div>
+                                        <input type="password" name="currentPassword" placeholder="••••••••"
+                                               class="block w-full pl-9 pr-3 py-2 bg-[#0d1117] border border-border rounded-lg text-xs text-textPrimary placeholder-textSecondary/60 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-textSecondary mb-1">New Password</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i data-lucide="lock" class="h-3.5 w-3.5 text-[#8b949e]"></i>
+                                        </div>
+                                        <input type="password" name="newPassword" placeholder="Min. 6 characters"
+                                               class="block w-full pl-9 pr-3 py-2 bg-[#0d1117] border border-border rounded-lg text-xs text-textPrimary placeholder-textSecondary/60 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors" required>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-textSecondary mb-1">Confirm New Password</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i data-lucide="lock" class="h-3.5 w-3.5 text-[#8b949e]"></i>
+                                        </div>
+                                        <input type="password" name="confirmPassword" placeholder="Re-enter new password"
+                                               class="block w-full pl-9 pr-3 py-2 bg-[#0d1117] border border-border rounded-lg text-xs text-textPrimary placeholder-textSecondary/60 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors" required>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                        class="w-full bg-[#1f6feb] hover:bg-[#388bfd] text-white py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5 mt-1">
+                                    <i data-lucide="shield-check" class="h-3.5 w-3.5"></i>
+                                    Update Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                        <!-- End Password Section -->
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+   
+    </script>
+</body>
+</html>

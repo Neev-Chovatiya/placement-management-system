@@ -1,0 +1,141 @@
+@model IEnumerable<pms.Models.Placement>
+@{
+    var reportType = ViewBag.ReportType as string;
+    var selectedYear = ViewBag.SelectedYear as string;
+    
+    // Process data for charts
+    var labels = new List<string>();
+    var data = new List<decimal>();
+    
+    if (reportType == "company")
+    {
+        var grouped = Model.GroupBy(p => p.Company?.CompanyName)
+            .Select(g => new { Name = g.Key ?? "Unknown", Count = g.Count() })
+            .OrderByDescending(g => g.Count).Take(10);
+        labels = grouped.Select(g => g.Name).ToList();
+        data = grouped.Select(g => (decimal)g.Count).ToList();
+    }
+    else if (reportType == "branch")
+    {
+        var grouped = Model.GroupBy(p => p.Student?.Branch)
+            .Select(g => new { Name = g.Key ?? "Unknown", Count = g.Count() })
+            .OrderByDescending(g => g.Count);
+        labels = grouped.Select(g => g.Name).ToList();
+        data = grouped.Select(g => (decimal)g.Count).ToList();
+    }
+    else // placed
+    {
+        var grouped = Model.GroupBy(p => {
+            if (p.Package < 5) return "< 5 LPA";
+            if (p.Package < 10) return "5-10 LPA";
+            if (p.Package < 20) return "10-20 LPA";
+            return "20+ LPA";
+        }).Select(g => new { Name = g.Key, Count = g.Count() });
+        labels = grouped.Select(g => g.Name).ToList();
+        data = grouped.Select(g => (decimal)g.Count).ToList();
+    }
+}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Charts - MSU Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117',
+                        surface: '#161b22',
+                        surfaceHover: '#1c2128',
+                        primary: '#2f81f7',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden text-sm md:text-base">
+
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <h2 class="text-xl text-white font-medium">Placement Analytics</h2>
+            <a href="/Home/Reports" class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md transition-colors text-sm font-medium">Back to Reports</a>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-4xl mx-auto w-full">
+                <div class="bg-surface border border-border rounded-xl p-6 shadow-sm">
+                    <h3 class="text-xl text-white font-medium mb-6">
+                        @if(reportType == "company") { <text>Top Recruiting Companies (@selectedYear)</text> }
+                        else if(reportType == "branch") { <text>Branch-wise Placement Distribution (@selectedYear)</text> }
+                        else { <text>Salary Package Ranges (@selectedYear)</text> }
+                    </h3>
+                    
+                    <div class="relative h-[400px]">
+                        <canvas id="reportChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        var ctx = document.getElementById('reportChart').getContext('2d');
+        var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels));
+        var data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(data));
+        
+        var chartType = '@(reportType == "branch" ? "pie" : "bar")';
+        
+        new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Number of Students',
+                    data: data,
+                    backgroundColor: [
+                        '#2f81f7', '#238636', '#a371f7', '#d29922', '#f85149',
+                        '#1f6feb', '#2ea043', '#8957e5', '#e3b341', '#da3633'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#c9d1d9' }
+                    }
+                },
+                scales: chartType === 'bar' ? {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#8b949e', precision: 0 },
+                        grid: { color: '#30363d' }
+                    },
+                    x: {
+                        ticks: { color: '#8b949e' },
+                        grid: { display: false }
+                    }
+                } : {}
+            }
+        });
+    </script>
+</body>
+</html>

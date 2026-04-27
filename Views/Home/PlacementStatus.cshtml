@@ -1,0 +1,217 @@
+@model pms.Models.Placement?
+@{
+    var studentName = ViewBag.StudentName as string ?? "Student";
+    bool isPlaced = Model != null;
+
+    // Not-placed context (from ViewBag)
+    int totalApps = isPlaced ? 0 : (int)(ViewBag.TotalApplications ?? 0);
+    int shortlisted = isPlaced ? 0 : (int)(ViewBag.ShortlistedCount ?? 0);
+    var bestApp = isPlaced ? null : ViewBag.BestApplication as pms.Models.Application;
+}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Status - PMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117',
+                        surface: '#161b22',
+                        surfaceHover: '#1c2128',
+                        primary: '#2f81f7',
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b949e; }
+
+        .confetti-bg {
+            background-color: #2d3722;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10 L15 15 M80 20 L85 15 M40 80 L35 85 M70 70 L75 75' stroke='%2334a853' stroke-width='3' stroke-linecap='round' opacity='0.6'/%3E%3Cpath d='M30 30 L35 25 M60 50 L65 45 M90 80 L85 85' stroke='%234285f4' stroke-width='3' stroke-linecap='round' opacity='0.6'/%3E%3Cpath d='M50 15 L45 20 M20 60 L15 65 M80 50 L85 55' stroke='%23fbbc05' stroke-width='3' stroke-linecap='round' opacity='0.6'/%3E%3Cpath d='M25 80 L30 75 M75 30 L70 35 M45 45 L50 50' stroke='%23ea4335' stroke-width='3' stroke-linecap='round' opacity='0.5'/%3E%3C/svg%3E");
+            background-size: 150px 150px;
+        }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_StudentSidebar" />
+
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="student">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, @studentName</h2>
+            <a href="/Users/Logout" class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">Logout</a>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-4xl mx-auto">
+                <h3 class="text-xl text-white font-medium mb-6">Placement Status</h3>
+
+                @if (isPlaced)
+                {
+                    <!-- ============================== -->
+                    <!--   PLACED STATE                 -->
+                    <!-- ============================== -->
+
+                    var companyName = Model!.Company?.CompanyName ?? "N/A";
+                    var jobRole = Model.Job?.JobRole ?? "N/A";
+                    var companyInitial = companyName.Length > 0 ? companyName.Substring(0, 1).ToUpper() : "?";
+
+                    <!-- Celebration Banner -->
+                    <div class="confetti-bg w-full rounded-xl p-6 md:p-8 border border-[#3a5a2e] shadow-lg mb-8 flex items-center justify-center text-center">
+                        <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-[#e8f5e9] flex items-center gap-3 tracking-wide drop-shadow-md flex-wrap justify-center">
+                            <span class="text-3xl">🎉</span>
+                            Congratulations, @studentName! You are placed at @companyName
+                            <span class="text-3xl">🎉</span>
+                        </h2>
+                    </div>
+
+                    <!-- Offer Details Card -->
+                    <div class="max-w-md mx-auto">
+                        <div class="bg-surface border border-border rounded-xl p-6 shadow-sm">
+                            <h4 class="text-sm font-medium text-textPrimary mb-5">Offer Details</h4>
+
+                            <!-- Company Logo & Name -->
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-11 h-11 rounded-lg bg-[#21262d] border border-border flex items-center justify-center flex-shrink-0">
+                                    <span class="text-lg font-bold text-textPrimary">@companyInitial</span>
+                                </div>
+                                <span class="text-textPrimary font-medium text-base">@companyName</span>
+                            </div>
+
+                            <!-- Details -->
+                            <div class="space-y-4 mb-8">
+                                <div class="flex items-center gap-3 text-textSecondary">
+                                    <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0"></i>
+                                    <span class="text-sm">Role: <span class="text-textPrimary ml-1">@jobRole</span></span>
+                                </div>
+                                <div class="flex items-center gap-3 text-textSecondary">
+                                    <i data-lucide="banknote" class="w-4 h-4 flex-shrink-0"></i>
+                                    <span class="text-sm">Package: <span class="text-textPrimary ml-1">@Model.Package LPA</span></span>
+                                </div>
+                                <div class="flex items-center gap-3 text-textSecondary">
+                                    <i data-lucide="calendar" class="w-4 h-4 flex-shrink-0"></i>
+                                    <span class="text-sm">Placement Date: <span class="text-textPrimary ml-1">@Model.PlacementDate.ToString("MMMM dd, yyyy")</span></span>
+                                </div>
+                            </div>
+
+                            <!-- Placed Badge -->
+                            <div class="flex items-center justify-center gap-2 bg-green-900/30 border border-green-700 text-green-400 rounded-lg py-3">
+                                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                                <span class="font-semibold text-sm">Placement Confirmed</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-6">
+                            <a href="/Home/MyApplications" class="text-sm text-textSecondary hover:text-white transition-colors">
+                                View all my applications →
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- ============================== -->
+                    <!--   NOT PLACED STATE             -->
+                    <!-- ============================== -->
+
+                    <!-- Status Banner -->
+                    <div class="w-full rounded-xl p-6 md:p-8 border border-border bg-surface shadow-sm mb-8 flex flex-col items-center text-center gap-3">
+                        <div class="w-16 h-16 rounded-full bg-[#1f6feb]/10 border-2 border-[#1f6feb]/30 flex items-center justify-center">
+                            <i data-lucide="clock" class="w-8 h-8 text-primary"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-white">Not Yet Placed</h2>
+                        <p class="text-textSecondary text-sm max-w-sm">
+                            You haven't been placed yet, @studentName. Keep applying — your dream offer is just around the corner!
+                        </p>
+                    </div>
+
+                    <!-- Application Progress Stats -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                        <div class="bg-surface border border-border rounded-xl p-5 text-center">
+                            <div class="text-3xl font-bold text-white mb-1">@totalApps</div>
+                            <div class="text-xs text-textSecondary">Total Applications</div>
+                        </div>
+                        <div class="bg-surface border border-border rounded-xl p-5 text-center">
+                            <div class="text-3xl font-bold text-[#d29922] mb-1">@shortlisted</div>
+                            <div class="text-xs text-textSecondary">Shortlisted / Interview</div>
+                        </div>
+                        <div class="bg-surface border border-border rounded-xl p-5 text-center">
+                            <div class="text-3xl font-bold text-[#da3633] mb-1">Not Placed</div>
+                        </div>
+                    </div>
+
+                    @if (bestApp != null)
+                    {
+                        <!-- Best Active Application -->
+                        <div class="max-w-md mx-auto">
+                            <div class="bg-surface border border-[#d29922]/40 rounded-xl p-6 shadow-sm">
+                                <h4 class="text-sm font-medium text-[#d29922] mb-4 flex items-center gap-2">
+                                    <i data-lucide="star" class="w-4 h-4"></i>
+                                    Your Best Active Application
+                                </h4>
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-10 h-10 rounded-lg bg-[#21262d] border border-border flex items-center justify-center flex-shrink-0">
+                                        <span class="text-sm font-bold text-textPrimary">@(bestApp.Job?.Company?.CompanyName?.Substring(0, 1).ToUpper() ?? "?")</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-textPrimary font-medium">@(bestApp.Job?.Company?.CompanyName ?? "N/A")</div>
+                                        <div class="text-textSecondary text-xs">@(bestApp.Job?.JobRole ?? "N/A")</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-textSecondary">Status</span>
+                                    <span class="bg-[#d29922] text-white px-3 py-1 rounded-md text-xs font-medium">@bestApp.Status</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (totalApps == 0)
+                    {
+                        <!-- No applications at all -->
+                        <div class="text-center">
+                            <p class="text-textSecondary text-sm mb-4">You haven't applied to any jobs yet. Start your placement journey!</p>
+                            <a href="/Home/JobOpenings" class="inline-block bg-[#1f6feb] hover:bg-[#388bfd] text-white px-6 py-2.5 rounded-md text-sm font-medium transition-colors">
+                                Browse Job Openings
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-textSecondary text-sm mt-2">
+                            You have @totalApps application@(totalApps == 1 ? "" : "s") — results are pending.
+                            <a href="/Home/MyApplications" class="text-primary hover:underline ml-1">View applications →</a>
+                        </div>
+                    }
+                }
+
+            </div>
+        </main>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

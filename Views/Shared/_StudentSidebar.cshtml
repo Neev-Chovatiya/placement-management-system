@@ -1,0 +1,96 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+
+<!-- STUDENT SIDEBAR -->
+<!-- MOBILE OVERLAY -->
+<div id="student-sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden transition-opacity duration-300"></div>
+
+<aside id="student-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-surface border-r border-border flex flex-col transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 shadow-xl lg:shadow-none">
+    
+    <!-- Mobile Close Button -->
+    <div class="md:hidden absolute right-4 top-4">
+        <button id="student-sidebar-close" class="text-textSecondary hover:text-white p-2">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+    </div>
+    
+    <!-- Logo Area -->
+    <div class="h-16 flex items-center px-6 border-b border-border bg-background">
+        <div class="flex items-center gap-3">
+            <div class="bg-surface border border-border p-1.5 rounded-lg">
+                <i data-lucide="graduation-cap" class="text-primary w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-base font-bold text-white leading-tight">MSU</h1>
+                <p class="text-[10px] text-textSecondary uppercase tracking-wider">FTE</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1.5">
+        <a href="/Home/StudentDashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "StudentDashboard" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            Dashboard
+        </a>
+        
+        <a href="/Home/ViewCompanies" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "ViewCompanies" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="building-2" class="w-5 h-5"></i>
+            View Companies
+        </a>
+        
+        <a href="/Home/JobOpenings" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "JobOpenings" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="briefcase" class="w-5 h-5"></i>
+            Job Openings
+        </a>
+        
+        <a href="/Home/MyApplications" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "MyApplications" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+            My Applications
+        </a>
+        
+        <a href="/Home/PlacementStatus" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "PlacementStatus" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="line-chart" class="w-5 h-5"></i>
+            Placement Status
+        </a>
+    </nav>
+
+    <!-- Profile Section -->
+    <div class="p-3 border-t border-border">
+        <a href="/Home/StudentProfile" class="flex items-center justify-between px-3 py-2 rounded-lg transition-colors @(currentAction == "StudentProfile" ? "bg-[#1f2937]/60 text-[#58a6ff]" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <div class="flex items-center gap-3">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span class="@(currentAction == "StudentProfile" ? "font-medium" : "")">Profile</span>
+            </div>
+            <!-- Small Avatar -->
+            <div class="w-6 h-6 rounded-full bg-[#30363d] flex items-center justify-center overflow-hidden">
+                <i data-lucide="user" class="w-4 h-4 text-gray-400 mt-1"></i>
+            </div>
+        </a>
+    </div>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('student-sidebar');
+        const overlay = document.getElementById('student-sidebar-overlay');
+        const closeBtn = document.getElementById('student-sidebar-close');
+        
+        // Find all toggle buttons (looking for the hamburger menu icon)
+        const toggleButtons = document.querySelectorAll('[data-sidebar-toggle="student"]');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        toggleButtons.forEach(btn => btn.addEventListener('click', toggleSidebar));
+        if (closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+        if (overlay) overlay.addEventListener('click', toggleSidebar);
+    });
+</script>
+
+<!-- SignalR Live Refresh -->
+<partial name="_SignalRRefresh" />

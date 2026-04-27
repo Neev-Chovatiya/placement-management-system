@@ -1,0 +1,244 @@
+
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Reports - MSU Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Main app background
+                        surface: '#161b22',    // Sidebar and Cards
+                        surfaceHover: '#1c2128', // Hover state for lists
+                        primary: '#2f81f7',    // Blue accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8b949e;
+            }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_AdminSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="admin">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Welcome Text -->
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, Admin</h2>
+
+            <!-- Logout Button -->
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" onclick="window.location.href='/Home/Index'">Logout</button>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col">
+
+            <div class="max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
+
+                <!-- Page Header & Filter -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                    <h3 class="text-xl text-white font-medium">Generate Placement Reports</h3>
+
+                    <!-- Year Dropdown Filter -->
+                    <div class="flex items-center gap-3">
+                        <span class="text-textSecondary text-sm hidden sm:inline-block">Filter by Year</span>
+                        <div class="relative w-32">
+                            <select id="yearFilter" class="appearance-none block w-full pl-3 pr-8 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer">
+                                <option value="all">All Years</option>
+                                <option value="2024">2024</option>
+                                <option value="2023">2023</option>
+                                <option value="2022">2022</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 flex-1 content-start">
+
+                    <!-- Card 1: Placed Students List -->
+                    <div class="bg-[#181d24] border border-border rounded-xl p-6 shadow-sm flex flex-col transition-all hover:border-border/80 hover:shadow-md">
+
+                        <!-- Header / Icon -->
+                        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-border/50">
+                            <div class="w-12 h-12 rounded-lg bg-[#1f2937] flex items-center justify-center border border-border shadow-inner flex-shrink-0">
+                                <i data-lucide="clipboard-list" class="text-[#58a6ff] w-6 h-6"></i>
+                            </div>
+                            <h4 class="text-lg text-textPrimary font-semibold tracking-wide">Placed Students List</h4>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1">
+                            <h5 class="text-base text-white font-medium mb-2">Comprehensive Placed Students List</h5>
+                            <p class="text-sm text-textSecondary leading-relaxed mb-8">
+                                A full list of all students who have successfully secured placements this academic year, including company, package, and year details.
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col gap-3 mt-auto">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="goToReport('ReportCharts', 'placed')" class="bg-[#1f6feb]/10 text-[#58a6ff] border border-[#1f6feb]/30 hover:bg-[#1f6feb] hover:text-white py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                    View Report
+                                </button>
+                                <button onclick="goToReport('PrintReport', 'placed')" class="bg-transparent text-textSecondary border border-border hover:text-white hover:border-textSecondary py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-textSecondary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                    Generate PDF
+                                </button>
+                            </div>
+                            <button onclick="goToReport('DownloadCsvReport', 'placed')" class="w-full bg-transparent text-textSecondary border border-border hover:text-white hover:border-textSecondary py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-textSecondary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                Download CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Company-wise Placement -->
+                    <div class="bg-[#181d24] border border-border rounded-xl p-6 shadow-sm flex flex-col transition-all hover:border-border/80 hover:shadow-md">
+
+                        <!-- Header / Icon -->
+                        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-border/50">
+                            <div class="w-12 h-12 rounded-lg bg-[#1f2937] flex items-center justify-center border border-border shadow-inner flex-shrink-0">
+                                <i data-lucide="building-2" class="text-[#58a6ff] w-6 h-6"></i>
+                            </div>
+                            <h4 class="text-lg text-textPrimary font-semibold tracking-wide leading-tight">Company-wise Placement</h4>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1">
+                            <h5 class="text-base text-white font-medium mb-2">Company-wise Placement Analysis</h5>
+                            <p class="text-sm text-textSecondary leading-relaxed mb-8">
+                                A statistical breakdown of placements, packages, and recruitment volume, grouped by recruiting company.
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col gap-3 mt-auto">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="goToReport('ReportCharts', 'company')" class="bg-[#1f6feb]/10 text-[#58a6ff] border border-[#1f6feb]/30 hover:bg-[#1f6feb] hover:text-white py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                    View Report
+                                </button>
+                                <button onclick="goToReport('PrintReport', 'company')" class="bg-transparent text-textSecondary border border-border hover:text-white hover:border-textSecondary py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-textSecondary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                    Generate PDF
+                                </button>
+                            </div>
+                            <button onclick="goToReport('DownloadCsvReport', 'company')" class="w-full bg-transparent text-textSecondary border border-border hover:text-white hover:border-textSecondary py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-textSecondary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                Download CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Branch-wise Placement -->
+                    <div class="bg-[#181d24] border border-border rounded-xl p-6 shadow-sm flex flex-col transition-all hover:border-border/80 hover:shadow-md">
+
+                        <!-- Header / Icon -->
+                        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-border/50">
+                            <div class="w-12 h-12 rounded-lg bg-[#1f2937] flex items-center justify-center border border-border shadow-inner flex-shrink-0 relative">
+                                <!-- Custom icon combination to match screenshot idea -->
+                                <i data-lucide="git-branch" class="text-[#58a6ff] w-6 h-6 absolute"></i>
+                                <i data-lucide="graduation-cap" class="text-[#58a6ff] w-3 h-3 absolute top-2 right-2 bg-[#1f2937]"></i>
+                            </div>
+                            <h4 class="text-lg text-textPrimary font-semibold tracking-wide leading-tight">Branch-wise Placement</h4>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1">
+                            <h5 class="text-base text-white font-medium mb-2">Branch-wise Placement Breakdown</h5>
+                            <p class="text-sm text-textSecondary leading-relaxed mb-8">
+                                Detailed placement statistics, average packages, and percentage placement data for each academic branch.
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col gap-3 mt-auto">
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="goToReport('ReportCharts', 'branch')" class="bg-[#1f6feb]/10 text-[#58a6ff] border border-[#1f6feb]/30 hover:bg-[#1f6feb] hover:text-white py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                    View Report
+                                </button>
+                                <button onclick="goToReport('PrintReport', 'branch')" class="bg-transparent text-textSecondary border border-border hover:text-white hover:border-textSecondary py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-textSecondary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                    Generate PDF
+                                </button>
+                            </div>
+                            <button onclick="goToReport('DownloadCsvReport', 'branch')" class="w-full bg-transparent text-textSecondary border border-border hover:text-white hover:border-textSecondary py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-textSecondary focus:ring-offset-2 focus:ring-offset-[#181d24]">
+                                Download CSV
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer text -->
+                <div class="text-center pb-2 mt-10">
+                    <span class="text-sm text-textSecondary opacity-80">
+                        Reports Center, MSU FTE
+                    </span>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+
+        function goToReport(action, type) {
+            const year = document.getElementById('yearFilter').value;
+            window.location.href = `/Home/${action}?type=${type}&year=${year}`;
+        }
+    </script>
+</body>
+</html>
+
+

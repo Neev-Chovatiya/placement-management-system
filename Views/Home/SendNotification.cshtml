@@ -1,0 +1,142 @@
+@model pms.Models.Notification
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Notification - MSU Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117',
+                        surface: '#161b22',
+                        primary: '#2f81f7',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d',
+                        inputBg: '#010409'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_AdminSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="admin">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, Admin</h2>
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors" onclick="window.location.href='/Home/Index'">Logout</button>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col items-center">
+
+            <div class="max-w-3xl w-full flex-1 flex flex-col">
+
+                <!-- Page Header -->
+                <div class="flex items-center gap-3 mb-6">
+                    <a href="/Home/ManageStudents" class="text-textSecondary hover:text-white transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </a>
+                    <h3 class="text-xl text-white font-medium">Send Notification to Student</h3>
+                </div>
+
+                <div class="bg-surface border border-border rounded-xl p-8 shadow-2xl">
+                    
+                    <!-- Student Info Summary -->
+                    <div class="flex items-center gap-4 mb-8 bg-[#1c2128] p-4 rounded-lg border border-border/50">
+                        <div class="bg-primary/10 p-3 rounded-full">
+                            <i data-lucide="user" class="text-primary w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-textSecondary px-0.5">Recipient</div>
+                            <div class="text-lg font-semibold text-white">@ViewBag.StudentName</div>
+                            <div class="text-xs text-textSecondary">Enrollment: <span class="text-textPrimary">@ViewBag.EnrollmentNo</span></div>
+                        </div>
+                    </div>
+
+                    <form asp-action="SendNotification" method="POST" class="space-y-6">
+                        <input type="hidden" asp-for="StudentID" />
+
+                        <div>
+                            <label asp-for="Message" class="block text-sm font-medium text-textPrimary mb-3">Compose Message</label>
+                            <div class="relative group">
+                                <div class="absolute top-3 left-3 pointer-events-none transition-colors group-focus-within:text-primary">
+                                    <i data-lucide="message-square" class="h-5 w-5 text-textSecondary"></i>
+                                </div>
+                                <textarea asp-for="Message" rows="6" required maxLength="255"
+                                          placeholder="Type your notification message here (max 255 characters)..."
+                                          class="block w-full pl-11 pr-4 py-3 bg-inputBg border border-border rounded-xl text-textPrimary placeholder-textSecondary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none min-h-[160px]"></textarea>
+                            </div>
+                            <div class="mt-2 flex justify-between text-[11px] text-textSecondary uppercase tracking-wider">
+                                <span asp-validation-for="Message" class="text-red-500 lowercase normal-case text-xs"></span>
+                                <span id="char-count">0 / 255</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex items-center gap-4">
+                            <button type="submit" class="flex-1 bg-primary hover:bg-primaryHover text-white font-semibold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-[0.98]">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Send Notification
+                            </button>
+                            <a href="/Home/ManageStudents" class="px-6 py-3 border border-border rounded-xl text-textSecondary hover:bg-surfaceHover hover:text-white transition-all font-medium">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Guidance Note -->
+                <div class="mt-6 flex gap-3 text-xs text-textSecondary leading-relaxed bg-primary/5 p-4 rounded-lg border border-primary/10">
+                    <i data-lucide="info" class="w-4 h-4 text-primary shrink-0 mt-0.5"></i>
+                    <p>Notifications sent will appear instantly in the student dashboard. Ensure the content is concise and provides clear instructions for the student regarding placements or documentation.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        // Character counter logic
+        const textarea = document.querySelector('textarea');
+        const counter = document.getElementById('char-count');
+        
+        textarea.addEventListener('input', () => {
+            const length = textarea.value.length;
+            counter.textContent = `${length} / 255`;
+            if (length >= 250) {
+                counter.classList.add('text-orange-500');
+            } else {
+                counter.classList.remove('text-orange-500');
+            }
+        });
+    </script>
+</body>
+</html>

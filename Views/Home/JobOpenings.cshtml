@@ -1,0 +1,338 @@
+@model pms.Models.JobOpeningsViewModel
+@{
+    var appliedJobIds = Model.AppliedJobIds ?? new List<int>();
+    var studentName   = ViewBag.StudentName as string ?? "Student";
+    var filteredCompanyName = ViewBag.FilteredCompanyName as string;
+    var filteredCompanyId   = ViewBag.FilteredCompanyId as int?;
+    bool isFiltered = filteredCompanyId.HasValue;
+
+    // Placement 2x rule
+    decimal? placedPackage = Model.PlacedPackage;
+    bool isPlaced = placedPackage.HasValue;
+    decimal minRequired = isPlaced ? placedPackage!.Value * 2 : 0;
+}
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Openings - PMS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117',
+                        surface: '#161b22',
+                        surfaceHover: '#1c2128',
+                        inputBg: '#010409',
+                        primary: '#2f81f7',
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b949e; }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_StudentSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="student">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, @studentName</h2>
+            <a href="/Users/Logout" class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">Logout</a>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8">
+            <div class="max-w-6xl mx-auto">
+                <h3 class="text-xl text-white font-medium mb-6">Job Openings</h3>
+
+                <!-- Success / Error Messages -->
+                @if (TempData["Success"] != null)
+                {
+                    <div class="mb-5 flex items-center gap-3 bg-green-900/40 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-sm">
+                        <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+                        <span>@TempData["Success"]</span>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="mb-5 flex items-center gap-3 bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm">
+                        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+                        <span>@TempData["Error"]</span>
+                    </div>
+                }
+
+                <!-- Placed Student 2x Rule Banner -->
+                @if (isPlaced)
+                {
+                    <div class="mb-5 flex items-center gap-3 bg-yellow-900/20 border border-yellow-700/50 text-yellow-300 px-4 py-3 rounded-lg text-sm">
+                        <i data-lucide="shield-check" class="w-4 h-4 flex-shrink-0"></i>
+                        <span>
+                            You are already placed with a package of <strong>@placedPackage LPA</strong>.
+                            You can only apply to jobs offering <strong>@minRequired LPA or more</strong> (2× your current package).
+                        </span>
+                    </div>
+                }
+
+                <!-- Company Filter Banner -->
+                @if (isFiltered)
+                {
+                    <div class="mb-5 flex items-center justify-between gap-3 bg-primary/10 border border-primary/30 text-textPrimary px-4 py-3 rounded-lg text-sm">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="building-2" class="w-4 h-4 text-primary flex-shrink-0"></i>
+                            <span>Showing jobs for <span class="font-semibold text-white">@filteredCompanyName</span></span>
+                        </div>
+                        <a href="/Home/JobOpenings" class="flex items-center gap-1 text-primary hover:text-primaryHover text-xs font-medium transition-colors">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                            Clear Filter
+                        </a>
+                    </div>
+                }
+
+                <!-- Search Bar -->
+                <form method="get" action="/Home/JobOpenings" class="relative mb-6">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="h-5 w-5 text-textSecondary"></i>
+                    </div>
+                    <input type="text" name="search" value="@Context.Request.Query["search"]"
+                           placeholder="Search by role, company or branch..."
+                           class="block w-full sm:w-96 pl-10 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                    @if (isFiltered)
+                    {
+                        <input type="hidden" name="companyId" value="@filteredCompanyId" />
+                    }
+                </form>
+
+                <!-- Job Openings List -->
+                <div class="flex flex-col gap-3">
+
+                    @if (!Model.Jobs.Any())
+                    {
+                        <div class="text-center py-16 text-textSecondary">
+                            <i data-lucide="briefcase" class="w-12 h-12 mx-auto mb-4 opacity-30"></i>
+                            @if (isFiltered)
+                            {
+                                <p class="text-lg">No jobs found for <span class="text-white font-semibold">@filteredCompanyName</span>.</p>
+                                <a href="/Home/JobOpenings" class="text-sm mt-2 inline-block text-primary hover:underline">View all job openings</a>
+                            }
+                            else
+                            {
+                                <p class="text-lg">No job openings found.</p>
+                                <p class="text-sm mt-1">Check back later or try a different search.</p>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var job in Model.Jobs)
+                        {
+                            bool hasApplied = appliedJobIds.Contains(job.JobID);
+                            var companyInitial = job.Company?.CompanyName?.Substring(0, 1).ToUpper() ?? "?";
+                            var companyName    = job.Company?.CompanyName ?? "Unknown Company";
+
+                            // Eligibility checks
+                            bool isCgpaLow = Model.StudentCGPA < job.MinCGPA;
+                            bool isDeadlinePassed = DateTime.Now.Date > job.LastApplyDate.Date;
+                            bool isLockedForPlaced = isPlaced && job.Package < minRequired;
+                            bool is2xEligible      = isPlaced && job.Package >= minRequired;
+
+                            // Border highlight
+                            string cardBorder = is2xEligible ? "border-yellow-600/60 hover:border-yellow-500" : "border-border hover:border-primary/40";
+                            bool isDimmed = isLockedForPlaced || isCgpaLow || isDeadlinePassed;
+
+                            <div class="bg-surface border @cardBorder p-4 lg:p-5 rounded-xl flex flex-col lg:flex-row lg:items-center gap-6 transition-colors @(isDimmed ? "opacity-60" : "")">
+
+                                <!-- Logo & Role Section -->
+                                <div class="flex items-center gap-4 lg:w-[35%]">
+                                    <div class="w-12 h-12 rounded bg-[#21262d] flex items-center justify-center flex-shrink-0 border border-border shadow-sm overflow-hidden">
+                                        @if (job.Company?.CompanyLogo != null)
+                                        {
+                                            <img src="data:image/png;base64,@Convert.ToBase64String(job.Company.CompanyLogo)" class="w-full h-full object-cover" />
+                                        }
+                                        else
+                                        {
+                                            <span class="font-sans text-lg font-bold text-textPrimary">@companyInitial</span>
+                                        }
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <div class="flex items-center gap-2 mb-0.5">
+                                            <span class="text-sm font-semibold text-white">@companyName</span>
+                                            @if (is2xEligible)
+                                            {
+                                                <span class="text-xs bg-yellow-900/50 border border-yellow-700 text-yellow-400 px-1.5 py-0.5 rounded font-medium">2× Eligible</span>
+                                            }
+                                        </div>
+                                        <div class="text-sm text-textSecondary">Role: <span class="text-textPrimary font-medium">@job.JobRole</span></div>
+                                        <div class="text-sm text-textSecondary mt-0.5">Package: <span class="@(is2xEligible ? "text-yellow-400 font-semibold" : "text-textPrimary")">@job.Package LPA</span></div>
+                                    </div>
+                                </div>
+
+                                <!-- Eligibility Section -->
+                                <div class="flex flex-col lg:w-[30%]">
+                                    <div class="text-sm font-medium text-textPrimary mb-1">Eligibility:</div>
+                                    <div class="text-sm text-textSecondary">Min CGPA: <span class="@(isCgpaLow ? "text-red-400 font-semibold" : "text-textPrimary")">@job.MinCGPA+</span> @(isCgpaLow ? "(Your CGPA: " + Model.StudentCGPA + ")" : "")</div>
+                                    <div class="text-sm text-textSecondary">Branch: <span class="text-textPrimary">@(job.EligibleBranch ?? "Any")</span></div>
+                                </div>
+
+                                <!-- Dates Section -->
+                                <div class="flex flex-col text-sm text-textSecondary lg:w-[20%]">
+                                    <div>Passing Year: <span class="text-textPrimary">@job.PassingYear</span></div>
+                                    <div class="mt-0.5">Last Date: <span class="@(isDeadlinePassed ? "text-red-400 font-semibold" : "text-textPrimary")">@job.LastApplyDate.ToString("dd MMM yyyy")</span></div>
+                                </div>
+
+                                <!-- Action Button -->
+                                <div class="lg:w-[15%] flex justify-end">
+                                    @if (hasApplied)
+                                    {
+                                        <button disabled
+                                                class="bg-green-900/50 border border-green-700 text-green-400 px-6 py-2 rounded-md text-sm font-medium w-full lg:w-auto cursor-not-allowed flex items-center justify-center gap-2">
+                                            <i data-lucide="check" class="w-4 h-4"></i>
+                                            Applied
+                                        </button>
+                                    }
+                                    else if (isDeadlinePassed)
+                                    {
+                                        <div class="flex flex-col items-end gap-1">
+                                            <button disabled
+                                                    class="bg-[#21262d] border border-border text-textSecondary px-4 py-2 rounded-md text-sm font-medium w-full lg:w-auto cursor-not-allowed flex items-center justify-center gap-2">
+                                                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                                Closed
+                                            </button>
+                                            <span class="text-xs text-red-400/80 text-right">Deadline passed</span>
+                                        </div>
+                                    }
+                                    else if (isCgpaLow)
+                                    {
+                                        <div class="flex flex-col items-end gap-1">
+                                            <button disabled
+                                                    class="bg-[#21262d] border border-border text-red-400 px-4 py-2 rounded-md text-sm font-medium w-full lg:w-auto cursor-not-allowed flex items-center justify-center gap-2">
+                                                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                                                Ineligible
+                                            </button>
+                                            <span class="text-xs text-red-400/80 text-right">Low CGPA</span>
+                                        </div>
+                                    }
+                                    else if (isLockedForPlaced)
+                                    {
+                                        <div class="flex flex-col items-end gap-1">
+                                            <button disabled
+                                                    class="bg-[#21262d] border border-border text-textSecondary px-4 py-2 rounded-md text-sm font-medium w-full lg:w-auto cursor-not-allowed flex items-center justify-center gap-2">
+                                                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                                                Locked
+                                            </button>
+                                            <span class="text-xs text-textSecondary text-right">Need @minRequired+ LPA</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" action="/Home/ApplyForJob">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="jobId" value="@job.JobID" />
+                                            @if (is2xEligible)
+                                            {
+                                                <button type="submit"
+                                                        class="bg-yellow-700 hover:bg-yellow-600 text-white px-5 py-2 rounded-md text-sm font-medium transition-colors w-full lg:w-auto flex items-center justify-center gap-1.5">
+                                                    <i data-lucide="star" class="w-3.5 h-3.5"></i>
+                                                    Apply
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit"
+                                                        class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-6 py-2 rounded-md text-sm font-medium transition-colors w-full lg:w-auto">
+                                                    Apply
+                                                </button>
+                                            }
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+
+                </div>
+
+                <!-- Pagination Controls -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 mt-8 mb-4">
+                    
+                    <!-- Rows Per Page Selector -->
+                    <div class="flex items-center gap-3 text-sm text-textSecondary">
+                        <span>Rows per page:</span>
+                        <select onchange="window.location.href='?search=@Context.Request.Query["search"]&companyId=@filteredCompanyId&pageSize=' + this.value" 
+                                class="bg-surface border border-border rounded-md px-2 py-1 focus:outline-none focus:border-primary transition-colors">
+                            <option value="5" selected="@(Model.Jobs.PageSize == 5 ? "selected" : null)">5</option>
+                            <option value="10" selected="@(Model.Jobs.PageSize == 10 ? "selected" : null)">10</option>
+                            <option value="20" selected="@(Model.Jobs.PageSize == 20 ? "selected" : null)">20</option>
+                        </select>
+                    </div>
+
+                    <!-- Pagination Links -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="?search=@Context.Request.Query["search"]&companyId=@filteredCompanyId&page=@(Model.Jobs.PageIndex - 1)&pageSize=@Model.Jobs.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Jobs.HasPreviousPage ? "pointer-events-none opacity-50" : "")">
+                            Previous
+                        </a>
+
+                        @for (int i = 1; i <= Model.Jobs.TotalPages; i++)
+                        {
+                            if (i == Model.Jobs.PageIndex)
+                            {
+                                <button class="w-8 h-8 flex items-center justify-center rounded-md bg-[#1f6feb] text-white font-medium shadow-sm transition-colors">
+                                    @i
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="?search=@Context.Request.Query["search"]&companyId=@filteredCompanyId&page=@i&pageSize=@Model.Jobs.PageSize"
+                                   class="w-8 h-8 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        <a href="?search=@Context.Request.Query["search"]&companyId=@filteredCompanyId&page=@(Model.Jobs.PageIndex + 1)&pageSize=@Model.Jobs.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Jobs.HasNextPage ? "pointer-events-none opacity-50" : "")">
+                            Next
+                        </a>
+                    </div>
+
+                    <!-- Total Items Info -->
+                    <div class="text-sm text-textSecondary">
+                        Showing @Model.Jobs.Count items on this page (Total: @Model.Jobs.TotalItems)
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

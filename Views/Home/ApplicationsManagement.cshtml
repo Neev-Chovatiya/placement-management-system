@@ -1,0 +1,354 @@
+@model pms.Models.ManageApplicationsViewModel
+<!--
+    NOTE FOR ASP.NET RAZOR PAGES IMPLEMENTATION:
+
+    1. _AdminLayout.cshtml:
+       - Update your sidebar navigation logic to set the "Applications" link as the active item.
+
+    2. ApplicationsManagement.cshtml:
+       - The content inside the <main id="dashboard-content"> tag belongs in this view.
+       - Use a Razor loop to dynamically generate the table rows based on the applicants list:
+foreach (var applicant in Model.Applicants) { ... }
+       - The Actions (Shortlist, Reject, Select) can be forms with buttons hitting specific page handlers, or links routing to specific actions (e.g., asp-page-handler="UpdateStatus" asp-route-id="applicant.Id" asp-route-status="Shortlisted").
+-->
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications Management - MSU Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0d1117', // Main app background
+                        surface: '#161b22',    // Sidebar and Cards
+                        surfaceHover: '#1c2128', // Hover state for lists
+                        primary: '#2f81f7',    // Blue accents
+                        primaryHover: '#388bfd',
+                        textPrimary: '#c9d1d9',
+                        textSecondary: '#8b949e',
+                        border: '#30363d',
+                        danger: '#f85149',     // Red for reject actions
+                        success: '#2ea043'     // Green for select actions
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #8b949e;
+            }
+
+        /* Custom checkbox styling for dark theme */
+        input[type="checkbox"] {
+            appearance: none;
+            background-color: #0d1117;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.15em;
+            height: 1.15em;
+            border: 1px solid #30363d;
+            border-radius: 0.25em;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+        }
+
+            input[type="checkbox"]::before {
+                content: "";
+                width: 0.65em;
+                height: 0.65em;
+                transform: scale(0);
+                transition: 120ms transform ease-in-out;
+                box-shadow: inset 1em 1em #2f81f7;
+                transform-origin: center;
+                clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+            }
+
+            input[type="checkbox"]:checked::before {
+                transform: scale(1);
+            }
+    </style>
+</head>
+<body class="antialiased h-screen flex overflow-hidden font-sans text-sm md:text-base">
+
+    <partial name="_AdminSidebar" />
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-background">
+
+        <!-- TOP HEADER -->
+        <header class="h-16 flex items-center justify-between px-6 lg:px-8 border-b border-border bg-surface">
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-textSecondary hover:text-white" data-sidebar-toggle="admin">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <!-- Welcome Text -->
+            <h2 class="text-xl text-white font-medium ml-4 md:ml-0">Welcome, Admin</h2>
+
+            <!-- Logout Button -->
+            <button class="bg-[#1f6feb] hover:bg-[#388bfd] text-white px-5 py-2 rounded-md text-sm font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" onclick="window.location.href='/Home/Index'">Logout</button>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main id="dashboard-content" class="flex-1 overflow-y-auto p-6 lg:p-8 flex flex-col">
+
+            <div class="max-w-[1400px] mx-auto w-full flex-1 flex flex-col">
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="bg-green-500/10 border border-green-500/50 text-green-500 px-4 py-3 rounded-lg mb-6 flex items-center gap-3">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        <span>@TempData["Success"]</span>
+                    </div>
+                }
+
+                <form method="get" asp-action="ApplicationsManagement" class="mb-6">
+                    <!-- Page Header & Job Filter -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h3 class="text-xl text-white font-medium">Applications Management</h3>
+
+                        <!-- Job Position Dropdown Filter -->
+                        <div class="relative w-full sm:w-[350px]">
+                            <select name="jobId" asp-items="ViewBag.Jobs" onchange="this.form.submit()" class="appearance-none block w-full pl-3 pr-10 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors cursor-pointer truncate">
+                                <option value="">All Job Positions</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i data-lucide="chevron-down" class="h-4 w-4 text-textSecondary"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Toolbar -->
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <!-- Search Bar -->
+                        <div class="relative w-full lg:flex-1 max-w-2xl flex gap-2">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="search" class="h-4 w-4 text-textSecondary"></i>
+                                </div>
+                                <input type="text" name="search" value="@Context.Request.Query["search"]" placeholder="Search applicants by name, branch, enrollment no..."
+                                       class="block w-full pl-10 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-textPrimary placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+                            </div>
+                            <button type="submit" class="bg-surface hover:bg-surfaceHover border border-border text-textPrimary px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Data Table -->
+                <div class="bg-surface border border-border rounded-xl overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+
+                        <!-- Table Head -->
+                        <thead>
+                            <tr class="border-b border-border bg-[#1c2128]/50">
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-12 text-center">Photo</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[20%]">Applicant</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[12%]">Branch</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[15%]">Company</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[8%]">CGPA</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[20%]">Application Status</th>
+                                <th class="py-3 px-4 text-textSecondary font-medium text-sm w-[25%]">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <!-- Table Body -->
+                        <tbody class="text-sm">
+                            @if (!Model.Applications.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="py-8 text-center text-textSecondary">
+                                        No applications found matching the criteria.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var app in Model.Applications)
+                                {
+                                    <tr class="border-b border-border hover:bg-surfaceHover transition-colors group">
+                                        <td class="py-3 px-4">
+                                            @if (app.Student?.ProfilePicture != null)
+                                            {
+                                                <img src="data:image/jpeg;base64,@(Convert.ToBase64String(app.Student.ProfilePicture))" alt="Photo" class="w-8 h-8 rounded-full border border-border object-cover">
+                                            }
+                                            else
+                                            {
+                                                <div class="w-8 h-8 rounded-full bg-[#30363d] flex items-center justify-center border border-border">
+                                                    <i data-lucide="user" class="w-4 h-4 text-textSecondary"></i>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex flex-col">
+                                                    <span class="text-textPrimary font-medium">@(app.Student?.FullName ?? "Unknown")</span>
+                                                    <span class="text-textSecondary text-xs">@(app.Student?.EnrollmentNo ?? "")</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 px-4 text-textSecondary">@(app.Student?.Branch ?? "N/A")</td>
+                                        <td class="py-3 px-4 text-textSecondary font-medium text-primary">@(app.Job?.Company?.CompanyName ?? "N/A")</td>
+                                        <td class="py-3 px-4 text-textSecondary">@(app.Student?.CGPA.ToString("F2") ?? "N/A")</td>
+                                        <td class="py-3 px-4">
+                                            @if (string.Equals(app.Status, "Shortlisted", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="inline-block bg-[#1f6feb] text-white px-3 py-1 rounded-full text-xs font-medium border border-[#388bfd]/50 shadow-[0_0_10px_rgba(31,111,235,0.3)]">
+                                                    Shortlisted
+                                                </span>
+                                            }
+                                            else if (string.Equals(app.Status, "Rejected", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="inline-block bg-[#da3633] text-white px-3 py-1 rounded-full text-xs font-medium">
+                                                    Rejected
+                                                </span>
+                                            }
+                                            else if (string.Equals(app.Status, "Selected", StringComparison.OrdinalIgnoreCase) || string.Equals(app.Status, "Placed", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="inline-block bg-[#238636] text-white px-3 py-1 rounded-full text-xs font-medium">
+                                                    Selected
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="inline-block bg-[#4b5563] text-white px-3 py-1 rounded-full text-xs font-medium">
+                                                    @(string.IsNullOrEmpty(app.Status) ? "Applied" : app.Status)
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="py-3 px-4">
+
+                                            <div class="flex items-center gap-4 opacity-80 group-hover:opacity-100 transition-opacity m-0">
+                                                <a asp-action="SendNotification" asp-route-studentId="@app.StudentID" class="text-orange-400 hover:text-orange-300 flex items-center gap-1.5 transition-colors" title="Send Notification">
+                                                    <i data-lucide="bell" class="w-3.5 h-3.5"></i> Notify
+                                                </a>
+                                                <form asp-action="UpdateApplicationStatus" method="post" class="flex items-center gap-4 m-0">
+                                                    <input type="hidden" name="applicationId" value="@app.ApplicationID" />
+                                                    
+                                                    @if (string.IsNullOrEmpty(app.Status) || string.Equals(app.Status, "Applied", StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        <button type="submit" name="status" value="Shortlisted" class="text-[#58a6ff] hover:text-white flex items-center gap-1.5 transition-colors">
+                                                            <i data-lucide="clipboard-list" class="w-4 h-4"></i> Shortlist
+                                                        </button>
+                                                        <button type="submit" name="status" value="Rejected" class="text-danger hover:text-[#ff7b72] flex items-center gap-1.5 transition-colors" onclick="return confirm('Are you sure you want to reject this application?');">
+                                                            <i data-lucide="x-circle" class="w-4 h-4"></i> Reject
+                                                        </button>
+                                                    }
+                                                    else if (string.Equals(app.Status, "Shortlisted", StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        <button type="submit" name="status" value="Selected" class="text-success hover:text-[#3fb950] flex items-center gap-1.5 transition-colors">
+                                                            <i data-lucide="crown" class="w-4 h-4"></i> Select
+                                                        </button>
+                                                        <button type="submit" name="status" value="Rejected" class="text-danger hover:text-[#ff7b72] flex items-center gap-1.5 transition-colors" onclick="return confirm('Are you sure you want to reject this application?');">
+                                                            <i data-lucide="x-circle" class="w-4 h-4"></i> Reject
+                                                        </button>
+                                                    }
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Bottom Layout: Pagination & Showing Info -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 mt-8 mb-4">
+                    
+                    <!-- Rows Per Page Selector -->
+                    <div class="flex items-center gap-3 text-sm text-textSecondary">
+                        <span>Rows per page:</span>
+                        <select onchange="window.location.href='?jobId=@Context.Request.Query["jobId"]&search=@Context.Request.Query["search"]&pageSize=' + this.value" 
+                                class="bg-surface border border-border rounded-md px-2 py-1 focus:outline-none focus:border-primary transition-colors">
+                            <option value="5" selected="@(Model.Applications.PageSize == 5 ? "selected" : null)">5</option>
+                            <option value="10" selected="@(Model.Applications.PageSize == 10 ? "selected" : null)">10</option>
+                            <option value="20" selected="@(Model.Applications.PageSize == 20 ? "selected" : null)">20</option>
+                            <option value="50" selected="@(Model.Applications.PageSize == 50 ? "selected" : null)">50</option>
+                        </select>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="?jobId=@Context.Request.Query["jobId"]&search=@Context.Request.Query["search"]&page=@(Model.Applications.PageIndex - 1)&pageSize=@Model.Applications.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Applications.HasPreviousPage ? "pointer-events-none opacity-50" : "")">
+                            Previous
+                        </a>
+
+                        @for (int i = 1; i <= Model.Applications.TotalPages; i++)
+                        {
+                            if (i == Model.Applications.PageIndex)
+                            {
+                                <button class="w-8 h-8 flex items-center justify-center rounded-md bg-[#1f6feb] text-white font-medium shadow-sm transition-colors">
+                                    @i
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="?jobId=@Context.Request.Query["jobId"]&search=@Context.Request.Query["search"]&page=@i&pageSize=@Model.Applications.PageSize"
+                                   class="w-8 h-8 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        <a href="?jobId=@Context.Request.Query["jobId"]&search=@Context.Request.Query["search"]&page=@(Model.Applications.PageIndex + 1)&pageSize=@Model.Applications.PageSize"
+                           class="h-8 px-3 flex items-center justify-center rounded-md text-textSecondary hover:bg-surfaceHover hover:text-white transition-colors @(!Model.Applications.HasNextPage ? "pointer-events-none opacity-50" : "")">
+                            Next
+                        </a>
+                    </div>
+
+                    <!-- Total Items Info -->
+                    <div class="text-sm text-textSecondary">
+                        Showing @((Model.Applications.PageIndex - 1) * Model.Applications.PageSize + 1) to @Math.Min(Model.Applications.PageIndex * Model.Applications.PageSize, Model.Applications.TotalItems) of @Model.Applications.TotalItems Applicants
+                    </div>
+
+                </div>
+
+               
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+

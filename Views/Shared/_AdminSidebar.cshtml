@@ -1,0 +1,104 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+
+<!-- ADMIN SIDEBAR -->
+<!-- MOBILE OVERLAY -->
+<div id="admin-sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden transition-opacity duration-300"></div>
+
+<aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-surface border-r border-border flex flex-col transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 shadow-xl lg:shadow-none">
+    
+    <!-- Mobile Close Button -->
+    <div class="md:hidden absolute right-4 top-4">
+        <button id="admin-sidebar-close" class="text-textSecondary hover:text-white p-2">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+    </div>
+
+    <!-- Logo Area -->
+    <div class="h-16 flex items-center px-6 border-b border-border bg-background">
+        <div class="flex items-center gap-3">
+            <div class="bg-surface border border-border p-1.5 rounded-lg">
+                <i data-lucide="graduation-cap" class="text-primary w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-base font-bold text-white leading-tight">MSU</h1>
+                <p class="text-[10px] text-textSecondary uppercase tracking-wider">FTE</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Navigation Links -->
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1.5">
+        <a href="/Home/AdminDashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "AdminDashboard" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+            Dashboard
+        </a>
+
+        <a href="/Home/ManageStudents" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "ManageStudents" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="user" class="w-5 h-5"></i>
+            Manage Students
+        </a>
+
+        <a href="/Home/ManageCompanies" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "ManageCompanies" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="building-2" class="w-5 h-5"></i>
+            Manage Companies
+        </a>
+
+        <a href="/Home/ManageJobs" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "ManageJobs" || currentAction == "ManageJobs_Create" || currentAction == "EditJob" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="briefcase" class="w-5 h-5"></i>
+            Manage Jobs
+        </a>
+
+        <a href="/Home/ApplicationsManagement" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "ApplicationsManagement" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+            Applications
+        </a>
+
+        <a href="/Home/PlacementsRegister" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "PlacementsRegister" || currentAction == "PlacementDetails" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="handshake" class="w-5 h-5"></i>
+            Placements
+        </a>
+
+        <a href="/Home/Reports" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "Reports" || currentAction == "ReportCharts" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+            Reports
+        </a>
+
+        <a href="/Home/AdminSettings" class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors @(currentAction == "AdminSettings" ? "bg-[#1f2937]/60 text-[#58a6ff] font-medium" : "text-textSecondary hover:bg-surfaceHover hover:text-white")">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            Settings
+        </a>
+    </nav>
+
+    <!-- Profile / Bottom Section -->
+    <div class="p-3 border-t border-border flex justify-center pb-6">
+        <div class="w-10 h-10 rounded-full bg-[#30363d] flex items-center justify-center overflow-hidden border border-border shadow-sm cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+            <img src="https://ui-avatars.com/api/?name=Admin&background=30363d&color=c9d1d9&size=64" alt="Admin" class="w-full h-full object-cover">
+        </div>
+    </div>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('admin-sidebar');
+        const overlay = document.getElementById('admin-sidebar-overlay');
+        const closeBtn = document.getElementById('admin-sidebar-close');
+        
+        // Find all toggle buttons (looking for the hamburger menu icon)
+        const toggleButtons = document.querySelectorAll('[data-sidebar-toggle="admin"]');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        toggleButtons.forEach(btn => btn.addEventListener('click', toggleSidebar));
+        if (closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+        if (overlay) overlay.addEventListener('click', toggleSidebar);
+    });
+</script>
+
+<!-- SignalR Live Refresh -->
+<partial name="_SignalRRefresh" />
